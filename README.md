@@ -61,4 +61,4 @@ The low CV standard deviation (±0.014) confirms the model measures a reproducib
 **1. Clone the repository**
 ```bash
 git clone [https://gitlab.com/nosir.phy/ammonia-ml-catalyst-discovery.git](https://gitlab.com/nosir.phy/ammonia-ml-catalyst-discovery.git)
-cd ammonia-ml-catalyst-discovery
+cd ammonia-ml-catalyst-discovery# ammonia-ml-catalyst-discovery
