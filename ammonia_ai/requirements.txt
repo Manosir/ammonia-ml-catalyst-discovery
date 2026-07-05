@@ -1,0 +1,21 @@
+# Core scientific stack
+numpy>=1.24
+pandas>=1.5
+scipy>=1.10
+
+# Atomistic simulation
+ase>=3.22
+
+# Machine learning
+scikit-learn>=1.2
+joblib>=1.2
+
+# Visualisation
+matplotlib>=3.6
+
+# Utilities
+tqdm>=4.64
+
+# Optional: deep learning (for v2.0 GNN)
+# torch>=2.0
+# torch-geometric>=2.3
