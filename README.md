@@ -34,6 +34,13 @@ linearly with ΔE(N\*) across transition metals (r > 0.98). Modelling N\*
 correctly is therefore the highest-impact starting point.
 
 ---
+## Pipeline Architecture
+
+![Pipeline Architecture](intermediates/n_adsorption/figures/pipeline_architecture.png)
+
+The framework processes Open Catalyst 2020 (OC20) trajectories by filtering for the target adsorbate, featurizing the initial unrelaxed state, and passing the graph through the core GCN utility to predict the adsorption energy.
+
+---
 
 ## Repository Structure
 
@@ -147,6 +154,18 @@ python intermediates/n_adsorption/scripts/03_build_and_train.py \
 Ru (ΔE = −0.22 eV) and Co (ΔE = −0.46 eV) are predicted closest to the
 Sabatier optimum (ΔE_opt ≈ −0.4 eV), consistent with experimental
 ammonia catalyst performance.
+
+### Model Performance
+
+![Parity Plot](intermediates/n_adsorption/figures/parity_plot.png)
+
+*Parity plot comparing the GCN-predicted N* adsorption energies against the DFT-calculated ground truth from the OC20 dataset.*
+
+### Model Interpretability
+
+![Feature Importance](intermediates/n_adsorption/figures/feature_importance.png)
+
+*Feature importance breakdown revealing the dominant geometric and electronic descriptors driving the model's energy predictions.*
 
 ---
 
