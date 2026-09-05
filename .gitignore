@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging and test tools
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# Editors and notebooks
+.vscode/
+.idea/
+*.swp
+*.swo
+.ipynb_checkpoints/
+
+# Large external datasets
+# Keep the provenance documentation, but ignore downloaded data.
+data/*
+!data/
+!data/README.md
+
+# Generated outputs and trained artifacts
+results/*
+!results/
+!results/README.md
+*.joblib
+*.pkl
+*.pickle
+*.tar
+*.tar.gz
+*.zip
+
+# Logs and temporary files
+*.log
+*.tmp
+*.part
+.DS_Store
