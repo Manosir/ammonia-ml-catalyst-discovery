@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml/badge.svg)](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml)
 
-Ammonia-AI is a reproducible materials-informatics workflow for exploring transition-metal surfaces for ammonia synthesis. The current release focuses on predicting nitrogen-atom (`N*`) adsorption-energy differences from Open Catalyst 2020 (OC20) IS2RE trajectories using physically motivated electronic, geometric, compositional, and surface descriptors.
+Ammonia-AI is a reproducible materials-informatics workflow for exploring transition-metal surfaces for ammonia synthesis. The current release focuses on predicting nitrogen-atom (`N*`) adsorption-energy differences from Open Catalyst 2020 (OC20) IS2RE trajectories using electronic, geometric, compositional, and surface descriptors.
 
 The repository is designed as a foundation for a future autonomous scientific-agent system. Planned extensions include uncertainty-aware candidate selection, multi-objective optimization, experiment memory, automated validation, and human-approved first-principles calculations.
 
@@ -10,7 +10,7 @@ The repository is designed as a foundation for a future autonomous scientific-ag
 
 ## Current result
 
-The current reproducible model-ready dataset contains **4,849 OC20 `N*` systems** after descriptor, energy, adsorbate, metallic-slab, and metadata filtering.
+The current model-ready dataset contains **4,849 OC20 `N*` systems** after descriptor, energy, adsorbate, metallic-slab, and metadata filtering.
 
 | Metric | Value |
 |---|---:|
@@ -21,17 +21,43 @@ The current reproducible model-ready dataset contains **4,849 OC20 `N*` systems*
 | Number of model features | 16 |
 | Model | `StandardScaler` + `GradientBoostingRegressor` |
 
-These metrics are preliminary. Random validation should be supplemented by leave-one-metal-out, leave-one-facet-out, composition-family holdout, and genuinely external validation before making claims about transferability.
+These metrics are preliminary. Random validation should later be supplemented by leave-one-metal-out, leave-one-facet-out, composition-family holdout, and genuinely external validation before making claims about transferability.
+
+## Results overview
+
+### Feature importance
+
+![Feature importance](intermediates/n_adsorption/figures/feature_importance.png)
+
+The feature-importance plot shows the relative contribution of the input descriptors to this fitted model. These values are model-specific associations, not causal physical percentages. In particular, the importance of `d_band_center_site` should not be interpreted as proof that this descriptor independently controls adsorption energy.
+
+### Parity plot
+
+![Parity plot](intermediates/n_adsorption/figures/parity_plot.png)
+
+The parity plot compares predicted and reference adsorption-energy differences for the evaluated model-ready systems.
+
+### Pipeline architecture
+
+![Pipeline architecture](intermediates/n_adsorption/figures/pipeline_architecture.png)
+
+The architecture diagram summarizes the separation between data acquisition, descriptor preprocessing, model training, diagnostics, prediction, and candidate screening.
+
+### Sabatier-style volcano
+
+![Sabatier volcano](intermediates/n_adsorption/figures/sabatier_volcano.png)
+
+The volcano plot provides a screening-oriented view of predicted adsorption-energy trends. It is not a complete ammonia-synthesis activity model and should not be interpreted as a direct prediction of reaction rate.
 
 ## Scientific scope and limitations
 
-The current target is the adsorption-energy difference
+The current target is the adsorption-energy difference:
 
 ```text
 ΔE_ads = E_relaxed − E_reference
 ```
 
-where the reference and relaxed energies are read from the OC20 IS2RE trajectory data processed by the training workflow.
+The reference and relaxed energies are read from the OC20 IS2RE trajectory data processed by the training workflow.
 
 The model combines slab-level and site-local d-band descriptors, electronic and compositional descriptors, initial-frame generalized coordination number, relaxed-frame geometry and force descriptors, and OC20 surface metadata.
 
@@ -41,7 +67,7 @@ Predictions should therefore be interpreted as computational screening hypothese
 
 ## Repository structure
 
-The active source of truth is the `ammonia_ai` package. The workflow scripts are kept under `intermediates/n_adsorption/scripts/` because they orchestrate dataset-specific preprocessing, training, prediction, and supplementary analyses.
+The active source of truth is the `ammonia_ai` package. Workflow scripts are kept under `intermediates/n_adsorption/scripts/` because they orchestrate dataset-specific preprocessing, training, prediction, and supplementary analyses.
 
 ```text
 ammonia-ml-catalyst-discovery/
@@ -71,6 +97,10 @@ ammonia-ml-catalyst-discovery/
 └── intermediates/
     └── n_adsorption/
         ├── figures/
+        │   ├── feature_importance.png
+        │   ├── parity_plot.png
+        │   ├── pipeline_architecture.png
+        │   └── sabatier_volcano.png
         └── scripts/
             ├── download_is2re_n.py
             ├── download_oc20_is2re_n.py
@@ -85,13 +115,11 @@ ammonia-ml-catalyst-discovery/
                 └── evaluate_gcn_frame_leakage.py
 ```
 
-Raw OC20 data, descriptor tables, trained models, caches, virtual environments, and temporary archives should not be committed to GitHub. The repository contains code, tests, documentation, and selected lightweight figures; data and model outputs are generated locally.
+Raw OC20 data, descriptor tables, trained models, caches, virtual environments, and temporary archives are generated locally and are not required for the public source repository.
 
 ## Installation
 
 The package requires **Python 3.11 or newer**, as declared in `pyproject.toml`.
-
-### Recommended installation
 
 ```bash
 git clone https://github.com/Manosir/ammonia-ml-catalyst-discovery.git
@@ -102,9 +130,9 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
 ```
 
-The editable installation installs the `ammonia_ai` package from `src/` and the test dependency. The project’s runtime dependencies are declared in `pyproject.toml`.
+The editable installation installs the `ammonia_ai` package from `src/` and the test dependency. Runtime dependencies are declared in `pyproject.toml`.
 
-### Alternative requirements-file installation
+An alternative installation is:
 
 ```bash
 python -m pip install -r requirements.txt
@@ -115,7 +143,7 @@ The `pyproject.toml` installation is preferred because it installs the package a
 
 ## Minimal verification
 
-Before downloading any OC20 data, verify the package and test suite:
+Before downloading OC20 data, verify the package and test suite:
 
 ```bash
 export PYTHONPATH="$PWD/src"
@@ -123,7 +151,7 @@ python -m pytest -q
 python -m compileall -q src tests intermediates
 ```
 
-The expected test result for the current release is:
+The expected local test result is:
 
 ```text
 30 passed
@@ -155,17 +183,17 @@ done
 OC20 IS2RE N* data
         │
         ├── acquire N* trajectories
-        ├── generate and validate OC20 surface metadata
+        ├── validate OC20 surface metadata
         ├── compute initial-frame GCN
         ├── compute final-frame site-local d-band descriptor
         ├── build and train the 16-feature model
-        ├── inspect schema, metadata, and model compatibility
+        ├── inspect schema and model compatibility
         ├── predict candidate adsorption energies
         ├── screen representative alloy compositions
         └── run supplementary benchmarks and diagnostics
 ```
 
-The workflow is intentionally separated into deterministic preprocessing, model training, prediction, and evaluation steps. This separation makes descriptor provenance and potential train/test leakage easier to inspect.
+The workflow is separated into deterministic preprocessing, model training, prediction, and evaluation steps. This separation makes descriptor provenance and potential train/test leakage easier to inspect.
 
 ## Data acquisition
 
@@ -175,19 +203,19 @@ The primary downloader is:
 intermediates/n_adsorption/scripts/download_is2re_n.py
 ```
 
-Inspect its available options before downloading:
+Inspect its options before downloading:
 
 ```bash
 python intermediates/n_adsorption/scripts/download_is2re_n.py --help
 ```
 
-Run the downloader according to the dataset-access method and output options supported by your local version:
+Run the downloader according to the supported local options:
 
 ```bash
-python intermediates/n_adsorption/scripts/download_is2re_n.py
+python intermediates/n_adsorption/scripts/download_is2re_n.py --out-dir data/is2re_N
 ```
 
-A second collector is available for the alternative OC20 IS2RE N* acquisition path:
+A second collector is available for an alternative OC20 IS2RE N* acquisition path:
 
 ```text
 intermediates/n_adsorption/scripts/download_oc20_is2re_n.py
@@ -202,7 +230,7 @@ find data/is2re_N -name '*.extxyz.xz' | head
 find data/is2re_N -name 'system.txt' -print
 ```
 
-The examples below assume the trajectories are located at:
+The examples below assume that trajectories are located at:
 
 ```text
 data/is2re_N/77/77/
@@ -218,16 +246,13 @@ The training workflow requires an OC20 metadata table when metadata coverage is 
 data/oc20_n_metadata.csv
 ```
 
-The table must provide complete identifiers and surface information for the systems used by training, including `system_id`, `miller_index`, and `shift` where required by the training script. The current upload archive does **not** contain a metadata-generation script, so the README does not document a command that is unavailable in the repository. Before publication, choose one of these two approaches:
+The table must provide complete identifiers and surface information for the systems used by training, including `system_id`, `miller_index`, and `shift` where required by the training script.
 
-1. Add the previously prepared `generate_oc20_n_metadata.py` script to `intermediates/n_adsorption/scripts/` and document its mapping-file checksum validation; or
-2. Generate `oc20_n_metadata.csv` using your local OC20 data-preparation workflow and document that external procedure and its checksum in `data/README.md`.
-
-Do not use `--skip-md5` to hide a checksum mismatch. If the mapping file differs from the expected source, record the actual checksum and verify that all local trajectory identifiers overlap with the mapping before training.
+The public repository does not redistribute OC20 data. Generate or obtain the metadata table through your local OC20 data-preparation workflow, and record the source and checksum in `data/README.md`. Do not use a checksum bypass to hide a mapping-file mismatch; verify that local trajectory identifiers overlap with the mapping before training.
 
 ## Descriptor preprocessing
 
-The initial-frame GCN descriptor is computed with:
+Compute the initial-frame GCN descriptor:
 
 ```bash
 python intermediates/n_adsorption/scripts/precompute_initial_gcn.py \
@@ -236,7 +261,7 @@ python intermediates/n_adsorption/scripts/precompute_initial_gcn.py \
   --workers 4
 ```
 
-The site-local d-band descriptor is computed from the final trajectory frame with:
+Compute the site-local d-band descriptor from the final trajectory frame:
 
 ```bash
 python intermediates/n_adsorption/scripts/precompute_site_d_band.py \
@@ -249,7 +274,7 @@ Both descriptor tables use `system_id` as their identifier. Missing descriptor v
 
 ## Training and inspection
 
-Run an inspection pass first. This creates and validates the model-ready dataset without fitting the final model:
+Run an inspection pass first. This validates the model-ready dataset without fitting the final model:
 
 ```bash
 python intermediates/n_adsorption/scripts/build_train_n_adsorption_model.py \
@@ -261,9 +286,9 @@ python intermediates/n_adsorption/scripts/build_train_n_adsorption_model.py \
   --inspect-only
 ```
 
-Review the reported record count, missing descriptor counts, metadata coverage, target distribution, and per-metal statistics. Train only after confirming that the input tables and metadata correspond to the same system identifiers.
+Review the record count, missing descriptor counts, metadata coverage, target distribution, and per-metal statistics. Train only after confirming that the input tables and metadata correspond to the same system identifiers.
 
-Run model training with:
+Run model training:
 
 ```bash
 python intermediates/n_adsorption/scripts/build_train_n_adsorption_model.py \
@@ -323,7 +348,7 @@ New code should import the contract rather than defining a second local feature 
 from ammonia_ai.schema import FEATURE_COLUMNS, TARGET_COLUMN
 ```
 
-The identifier normalization utilities in the schema support the transition between the canonical `system_id` spelling and legacy `sid` inputs. The canonical spelling for new files is `system_id`.
+The schema utilities support the transition between canonical `system_id` and legacy `sid` inputs. The canonical spelling for new files is `system_id`.
 
 ## Model diagnostics and prediction
 
@@ -343,7 +368,7 @@ python intermediates/n_adsorption/scripts/predict_candidate_adsorption.py \
   --metal Fe
 ```
 
-For a candidate table, use:
+For a candidate table:
 
 ```bash
 python intermediates/n_adsorption/scripts/predict_candidate_adsorption.py \
@@ -351,7 +376,7 @@ python intermediates/n_adsorption/scripts/predict_candidate_adsorption.py \
   --input-csv candidates.csv
 ```
 
-Each candidate row must contain a `label` and all 16 canonical feature columns. The feature-construction protocol must be scientifically compatible with the training data. A valid CSV schema alone does not guarantee that the candidate is in the model’s domain of applicability.
+Each candidate row must contain a `label` and all 16 canonical feature columns. A valid CSV schema alone does not guarantee that a candidate is within the model’s domain of applicability.
 
 ## Alloy screening
 
@@ -371,7 +396,7 @@ The current screener uses fixed representative geometry assumptions. It does not
 
 The supplementary benchmark scripts are not independent blind tests unless the compared systems were excluded from model training.
 
-Run the averaged-feature sensitivity analysis with:
+Run the averaged-feature sensitivity analysis:
 
 ```bash
 python intermediates/n_adsorption/scripts/benchmark_literature_averaged.py \
@@ -379,7 +404,7 @@ python intermediates/n_adsorption/scripts/benchmark_literature_averaged.py \
   --dataset results/n_adsorption/is2re_final_dataset.csv
 ```
 
-Run the OC20 literature comparison with:
+Run the OC20 literature comparison:
 
 ```bash
 python intermediates/n_adsorption/scripts/benchmark_oc20_literature.py \
@@ -393,26 +418,7 @@ The optional historical GCN diagnostic is located at:
 intermediates/n_adsorption/scripts/diagnostics/evaluate_gcn_frame_leakage.py
 ```
 
-It should be interpreted as a diagnostic comparison, not as the canonical 16-feature production workflow. Leakage-sensitive evaluation should explicitly separate descriptors derived from initial and relaxed frames and should report the split strategy used.
-
-## Reproducibility and data policy
-
-This repository does not redistribute the OC20 dataset. Users should obtain data through the appropriate OC20 distribution or download mechanism, comply with the dataset’s terms, and record the exact source and checksum used for each run.
-
-For a reproducible experiment, record the following information:
-
-| Item | Example |
-|---|---|
-| Python version | `3.11.x` |
-| Package version or Git commit | `git rev-parse HEAD` |
-| Dataset source and checksum | OC20 source plus recorded hash |
-| Trajectory directory | `data/is2re_N/77/77` |
-| Descriptor commands | Exact commands and worker count |
-| Metadata source | Mapping-file path and checksum |
-| Model manifest | `results/n_adsorption/model_manifest.json` |
-| Random seeds | Training and screening seeds where applicable |
-
-Generated datasets, descriptors, models, and caches should remain outside version control unless a separate release explicitly documents why they are being distributed.
+It should be interpreted as a diagnostic comparison, not as the canonical 16-feature production workflow. Leakage-sensitive evaluation should explicitly separate descriptors derived from initial and relaxed frames and report the split strategy used.
 
 ## Autonomous-agent vision
 
@@ -449,7 +455,7 @@ A minimum viable agent should contain:
 | Memory | Store plans, inputs, outputs, metrics, failures, and decisions. |
 | Reporter | Produce reproducible Markdown and JSON experiment reports. |
 
-The first autonomous demonstration should select a small batch of candidates using performance, uncertainty, and composition-cost objectives while requiring human approval before any expensive DFT execution.
+The first autonomous demonstration should select a small batch of candidates using performance, uncertainty, and composition-cost objectives, and require human approval before any expensive DFT execution.
 
 ## Testing and continuous integration
 
@@ -461,37 +467,13 @@ python -m pytest -q
 
 The tests cover the canonical 16-feature contract, missing and non-numeric feature values, current and legacy identifier schemas, duplicate identifiers, metadata completeness, model feature-count detection, GCN frame selection, and site-local d-band behavior.
 
-GitHub Actions runs the tests on supported Python versions using:
+GitHub Actions uses:
 
 ```text
 .github/workflows/ci.yml
 ```
 
-The CI workflow performs package installation, Python compilation, pytest execution, and canonical import checks. It does not download OC20 data or train the full model because those operations are large-data experiments rather than lightweight continuous-integration checks.
-
-## Contribution guidelines
-
-Contributions should preserve the canonical 16-feature contract unless a new model version is explicitly named and documented. New scripts should include a module docstring, command-line help, deterministic configuration, clear input and output paths, and a smoke-test command or unit test.
-
-Open an issue before changing the target-energy convention, OC20 filtering rules, descriptor definitions, frame-selection policy, identifier normalization, or model feature order. Pull requests should explain the motivation, identify affected files, report validation results, and describe any change in scientific interpretation.
-
-Scientific claims should distinguish clearly between model association, computational prediction, and experimentally validated behavior.
-
-## Final pre-push checklist
-
-Before pushing a new repository version, run:
-
-```bash
-find . -name '._*' -o -name '.DS_Store' -o -name '*.pyc'
-find . -type d \( -name '.venv' -o -name '__pycache__' -o -name '.pytest_cache' \) -print
-python -m pytest -q
-python -m compileall -q src tests intermediates
-git diff --check
-git status --short
-git diff --cached --name-only
-```
-
-The repository should not contain a virtual environment, raw OC20 data, generated model artifacts, temporary archives, macOS metadata files, Python caches, or stale duplicate implementations of the canonical package.
+The workflow installs packages, compiles Python, runs pytest, and checks canonical imports. It does not download OC20 data or train the full model because those are large-data experiments rather than lightweight continuous-integration checks.
 
 ## License
 
