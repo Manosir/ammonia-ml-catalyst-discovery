@@ -57,6 +57,7 @@ def main() -> int:
     if frame["mapping_adsorbate"].astype(str).str.upper().ne(frame["adsorbate"].astype(str).str.upper()).any():
         raise ValueError("mapping adsorbate disagrees with folder-derived adsorbate")
 
+    frame = frame.drop(columns=["delta_E_ads"], errors="ignore")  # legacy name; equals the relaxation change
     frame["relaxation_energy_change_eV"] = frame["energy_final_eV"] - frame["energy_initial_eV"]
     frame["adsorption_energy_eV"] = frame["official_adsorption_energy_eV"]
     frame["adsorption_energy_available"] = frame["adsorption_energy_eV"].notna()
@@ -74,13 +75,25 @@ def main() -> int:
         frame[f"qc_anomaly_{name}"] = anomaly.eq(code)
     frame["qc_suspect"] = frame[["qc_large_relaxation", "qc_positive_relaxation", "qc_mapping_anomaly", "qc_official_outside_initial_window"]].any(axis=1)
 
+    frame["is_clean_primary_regression_row"] = anomaly.eq(0)
     for feature in SCREENING_FEATURES:
         if feature not in frame:
             frame[feature] = np.nan
     implemented = pd.read_csv(args.registry)
     required_features = implemented.loc[(implemented.role == "feature") & (implemented.available_at_screening == "yes") & (implemented.implemented == "yes"), "name"].tolist()
-    unavailable = [feature for feature in required_features if feature not in frame.columns or frame[feature].isna().any()]
-    training_ready = not unavailable and not frame["qc_mapping_missing"].any() and frame["adsorption_energy_available"].all()
+    ok_names = set(required_features)
+    unavailable = sorted(
+        [f for f in SCREENING_FEATURES if f not in ok_names]
+        + [f for f in SCREENING_FEATURES if f in ok_names and (f not in frame.columns or frame[f].isna().any())]
+    )
+    reasons = []
+    if unavailable:
+        reasons.append(f"screening features unimplemented or incomplete: {unavailable}")
+    if frame["qc_mapping_missing"].any():
+        reasons.append("rows missing from OC20 mapping")
+    if not frame["adsorption_energy_available"].all():
+        reasons.append("missing adsorption energies")
+    training_ready = not reasons
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(args.out, index=False)
@@ -95,8 +108,8 @@ def main() -> int:
         "schema_version": SCHEMA_VERSION,
         "screening_regime": "thermal Haber-Bosch",
         "screening_input": "unrelaxed slab + adsorbate",
-        "group_key": "bulk_id",
-        "split_policy": ["grouped_by_bulk_id", "leave_chemical_system_out", "leave_element_out"],
+        "group_key": "bulk_mpid",
+        "split_policy": ["grouped_by_bulk_mpid", "leave_chemical_system_out", "leave_element_out"],
         "anomaly_policy": "retain flags; compare all rows versus exclude-anomalies sensitivity run",
         "raw_input": str(args.raw),
         "raw_md5": file_md5(args.raw),
@@ -108,7 +121,7 @@ def main() -> int:
         "excluded_columns": ["ads_height_final_audit", "mean_ads_force_final_audit", "energy_initial_eV", "energy_final_eV", "relaxation_energy_change_eV", "reference_energy", "anomaly", "official_adsorption_energy_eV", "system_id", "bulk_id", "ads_id"],
         "git_commit": git_commit,
         "training_ready": training_ready,
-        "training_ready_reasons": [] if training_ready else ["feature registry has unimplemented or missing screening features", "run grouped validation only after initial-frame descriptors are complete"],
+        "training_ready_reasons": reasons,
         "output": str(args.out),
     }
     args.manifest.parent.mkdir(parents=True, exist_ok=True)

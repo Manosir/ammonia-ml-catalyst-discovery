@@ -32,7 +32,7 @@ PROVENANCE_COLUMNS: tuple[str, ...] = (
     "status", "error", "source_path", "reference_file", "mapping_adsorbate", "ads_symbols",
     "adsorbate_formula", "adsorbate_class", "adsorbate_mass", "binding_atom",
     "official_adsorption_energy_available", "delta_E_ads", "n_adsorbate_N", "n_adsorbate_H",
-    "adsorbate_atom_count", "n_surface_atoms", "shift",
+    "adsorbate_atom_count", "n_surface_atoms", "shift", "miller_index", "adsorption_energy_available",
 )
 OC20_UNVERIFIED: tuple[str, ...] = ("split", "top", "adsorption_site", "class")
 METADATA_COLUMNS: tuple[str, ...] = ("system_id", "bulk_mpid", "bulk_symbols", "ads_id", "adsorbate", "miller_index", "shift", "mapping_adsorbate")
