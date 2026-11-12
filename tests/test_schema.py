@@ -1,4 +1,4 @@
-"""Tests for the canonical feature and metadata contracts."""
+"""Tests for identifier normalisation, metadata validation and the screening-v2 constants."""
 
 import sys
 from pathlib import Path
@@ -8,136 +8,80 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from ammonia_ai.schema import (  # noqa: E402
-    FEATURE_COLUMNS,
-    METADATA_COLUMNS,
-    TARGET_COLUMN,
-    model_feature_count,
-    normalize_system_id_column,
-    validate_feature_frame,
-    validate_metadata_frame,
-)
+from ammonia_ai import schema as S  # noqa: E402
 
 
-def make_features(rows: int = 2) -> pd.DataFrame:
-    return pd.DataFrame(
-        {
-            name: [float(index + 1) for index in range(rows)]
-            for name in FEATURE_COLUMNS
-        }
-    )
+def metadata(**overrides) -> pd.DataFrame:
+    data = {
+        "system_id": ["random1", "random2"],
+        "bulk_mpid": ["mp-1", "mp-2"],
+        "bulk_symbols": ["Fe", "Ru"],
+        "ads_id": [4, 4],
+        "adsorbate": ["N", "N"],
+        "mapping_adsorbate": ["N", "N"],
+        "miller_index": ["(1, 1, 0)", "(0, 0, 1)"],
+        "shift": [0.0, 0.25],
+    }
+    data.update(overrides)
+    return pd.DataFrame(data)
 
 
-def test_canonical_feature_contract_is_16_ordered_columns() -> None:
-    assert len(FEATURE_COLUMNS) == 16
-    assert FEATURE_COLUMNS[0] == "d_band_center_slab"
-    assert FEATURE_COLUMNS[1] == "d_band_center_site"
-    assert FEATURE_COLUMNS[-1] == "n_surface_atoms"
-    assert TARGET_COLUMN == "delta_E_ads"
+def test_schema_constants_follow_the_screening_regime() -> None:
+    assert S.SCHEMA_VERSION.startswith("screening-v2-")
+    assert S.TARGET_COLUMN == "adsorption_energy_eV"
+    assert tuple(S.TARGET_COLUMNS) == ("adsorption_energy_eV",)
+    assert not hasattr(S, "FEATURE_COLUMNS")  # the old leaky list must not come back
 
 
-def test_feature_frame_accepts_complete_numeric_data() -> None:
-    validate_feature_frame(make_features())
-
-
-def test_feature_frame_rejects_missing_column() -> None:
-    frame = make_features().drop(columns=["gcn_initial"])
-    with pytest.raises(ValueError, match="gcn_initial"):
-        validate_feature_frame(frame)
-
-
-def test_feature_frame_rejects_missing_value() -> None:
-    frame = make_features()
-    frame.loc[0, "gcn_initial"] = float("nan")
-    with pytest.raises(ValueError, match="gcn_initial"):
-        validate_feature_frame(frame)
-
-
-def test_feature_frame_rejects_non_numeric_data() -> None:
-    frame = make_features()
-    frame["shift"] = ["zero", "one"]
-    with pytest.raises(TypeError, match="shift"):
-        validate_feature_frame(frame)
+def test_group_keys_are_required_metadata() -> None:
+    assert {"bulk_mpid", "bulk_symbols"} <= set(S.METADATA_COLUMNS)
 
 
 def test_legacy_sid_is_normalized() -> None:
-    frame = pd.DataFrame({"sid": ["random1.extxyz.xz"], "value": [1]})
-    normalized = normalize_system_id_column(frame)
-    assert list(normalized["system_id"]) == ["random1"]
-    assert "sid" not in normalized.columns
+    result = S.normalize_system_id_column(pd.DataFrame({"sid": ["random1.extxyz.xz"], "value": [1]}))
+    assert list(result["system_id"]) == ["random1"]
+    assert "sid" not in result.columns
 
 
 def test_system_id_and_sid_conflict_is_rejected() -> None:
-    frame = pd.DataFrame(
-        {"system_id": ["random1"], "sid": ["random2"], "value": [1]}
-    )
+    frame = pd.DataFrame({"system_id": ["random1"], "sid": ["random2"], "value": [1]})
     with pytest.raises(ValueError, match="conflicting"):
-        normalize_system_id_column(frame)
+        S.normalize_system_id_column(frame)
 
 
 def test_duplicate_system_ids_are_rejected() -> None:
-    frame = pd.DataFrame({"system_id": ["random1", "random1"]})
     with pytest.raises(ValueError, match="duplicate"):
-        normalize_system_id_column(frame)
+        S.normalize_system_id_column(pd.DataFrame({"system_id": ["random1", "random1"]}))
 
 
-def test_metadata_frame_accepts_current_schema() -> None:
-    frame = pd.DataFrame(
-        {
-            "system_id": ["random1", "random2"],
-            "miller_index": ["(1, 1, 1)", "(2, 1, 0)"],
-            "shift": [0.0, 0.25],
-        }
-    )
-    result = validate_metadata_frame(frame)
-    assert tuple(METADATA_COLUMNS) == ("system_id", "miller_index", "shift")
+def test_complete_metadata_is_accepted() -> None:
+    result = S.validate_metadata_frame(metadata())
     assert list(result["system_id"]) == ["random1", "random2"]
 
 
-def test_metadata_frame_accepts_legacy_sid() -> None:
-    frame = pd.DataFrame(
-        {
-            "sid": ["random1"],
-            "miller_index": ["(1, 1, 1)"],
-            "shift": [0.0],
-        }
-    )
-    result = validate_metadata_frame(frame)
-    assert "system_id" in result.columns
+@pytest.mark.parametrize("column", list(S.METADATA_COLUMNS))
+def test_each_required_metadata_column_is_enforced(column) -> None:
+    with pytest.raises(ValueError, match=column):
+        S.validate_metadata_frame(metadata().drop(columns=[column]))
 
 
-def test_metadata_frame_rejects_missing_required_field() -> None:
-    frame = pd.DataFrame(
-        {"system_id": ["random1"], "miller_index": ["(1, 1, 1)"]}
-    )
-    with pytest.raises(ValueError, match="shift"):
-        validate_metadata_frame(frame)
-
-
-def test_metadata_frame_rejects_missing_values() -> None:
-    frame = pd.DataFrame(
-        {
-            "system_id": ["random1"],
-            "miller_index": ["(1, 1, 1)"],
-            "shift": [float("nan")],
-        }
-    )
-    with pytest.raises(ValueError, match="shift"):
-        validate_metadata_frame(frame)
+def test_mapping_adsorbate_disagreement_is_rejected() -> None:
+    with pytest.raises(ValueError, match="mapping"):
+        S.validate_metadata_frame(metadata(mapping_adsorbate=["N", "N2"]))
 
 
 def test_model_feature_count_reads_estimator() -> None:
     class Estimator:
-        n_features_in_ = 16
+        n_features_in_ = 5
 
-    assert model_feature_count(Estimator()) == 16
+    assert S.model_feature_count(Estimator()) == 5
 
 
 def test_model_feature_count_reads_pipeline_step() -> None:
     class Step:
-        n_features_in_ = 16
+        n_features_in_ = 5
 
     class Pipeline:
         named_steps = {"model": Step()}
 
-    assert model_feature_count(Pipeline()) == 16
+    assert S.model_feature_count(Pipeline()) == 5

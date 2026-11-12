@@ -21,6 +21,12 @@ def file_md5(path: Path) -> str:
             digest.update(chunk)
     return digest.hexdigest()
 
+def _json_default(o):
+    if hasattr(o, "item") and getattr(o, "size", 1) == 1:
+        return o.item()
+    if hasattr(o, "tolist"):
+        return o.tolist()
+    return str(o)
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -106,7 +112,7 @@ def main() -> int:
         "output": str(args.out),
     }
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
-    args.manifest.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    args.manifest.write_text(json.dumps(manifest, indent=2, default=_json_default), encoding="utf-8")
     print(f"Wrote {len(frame):,} rows to {args.out}")
     print(f"Training-ready: {training_ready}; missing/unimplemented features: {unavailable}")
     print(f"Wrote manifest to {args.manifest}")
