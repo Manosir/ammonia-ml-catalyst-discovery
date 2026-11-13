@@ -25,17 +25,19 @@ AUDIT_COLUMNS: tuple[str, ...] = (
     "relaxation_energy_change_eV", "reference_energy", "anomaly", "official_adsorption_energy_eV",
 )
 IDENTIFIER_COLUMNS: tuple[str, ...] = ("system_id", "bulk_id", "ads_id")
-GROUP_KEYS: tuple[str, ...] = ("bulk_mpid", "bulk_symbols")
+GROUP_KEYS: tuple[str, ...] = ("bulk_mpid", "bulk_reduced_formula")
 INPUT_CONTEXT_COLUMNS: tuple[str, ...] = ("adsorbate",)
 TARGET_COLUMNS: tuple[str, ...] = ("adsorption_energy_eV",)
 PROVENANCE_COLUMNS: tuple[str, ...] = (
     "status", "error", "source_path", "reference_file", "mapping_adsorbate", "ads_symbols",
     "adsorbate_formula", "adsorbate_class", "adsorbate_mass", "binding_atom",
     "official_adsorption_energy_available", "delta_E_ads", "n_adsorbate_N", "n_adsorbate_H",
-    "adsorbate_atom_count", "n_surface_atoms", "shift", "miller_index", "adsorption_energy_available",
+    "adsorbate_atom_count", "n_surface_atoms", "shift", "adsorption_energy_available",
 )
-OC20_UNVERIFIED: tuple[str, ...] = ("split", "top", "adsorption_site", "class")
-METADATA_COLUMNS: tuple[str, ...] = ("system_id", "bulk_mpid", "bulk_symbols", "ads_id", "adsorbate", "miller_index", "shift", "mapping_adsorbate")
+OC20_UNVERIFIED: tuple[str, ...] = ("split",)  # pickle value names differ from the official docs
+OC20_METADATA_COLUMNS: tuple[str, ...] = ("bulk_symbols", "miller_index", "top", "adsorption_site", "class")
+DERIVED_AUDIT_COLUMNS: tuple[str, ...] = ("anomaly_label", "is_clean_primary_regression_row")
+METADATA_COLUMNS: tuple[str, ...] = ("system_id", "bulk_mpid", "bulk_reduced_formula", "bulk_symbols", "ads_id", "adsorbate", "miller_index", "shift", "mapping_adsorbate")
 TARGET_COLUMN = "adsorption_energy_eV"
 SYSTEM_ID_COLUMN = "system_id"
 LEGACY_SYSTEM_ID_COLUMN = "sid"
@@ -131,3 +133,20 @@ def model_feature_count(model: Any) -> int | None:
 def assert_model_schema_version(manifest: dict[str, Any]) -> None:
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"model schema {manifest.get('schema_version')!r} does not match {SCHEMA_VERSION!r}")
+
+
+def reduced_formula(symbols: str) -> str:
+    """Element-sorted reduced formula from an OC20 bulk_symbols string ('Fe2' -> 'Fe')."""
+    import re
+    from functools import reduce
+    from math import gcd
+
+    counts: dict[str, int] = {}
+    for element, number in re.findall(r"([A-Z][a-z]?)(\d*)", str(symbols)):
+        counts[element] = counts.get(element, 0) + (int(number) if number else 1)
+    divisor = reduce(gcd, counts.values()) if counts else 1
+    parts = []
+    for element in sorted(counts):
+        n = counts[element] // divisor
+        parts.append(element if n == 1 else f"{element}{n}")
+    return "".join(parts)

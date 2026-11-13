@@ -16,6 +16,7 @@ def metadata(**overrides) -> pd.DataFrame:
         "system_id": ["random1", "random2"],
         "bulk_mpid": ["mp-1", "mp-2"],
         "bulk_symbols": ["Fe", "Ru"],
+        "bulk_reduced_formula": ["Fe", "Ru"],
         "ads_id": [4, 4],
         "adsorbate": ["N", "N"],
         "mapping_adsorbate": ["N", "N"],
@@ -85,3 +86,8 @@ def test_model_feature_count_reads_pipeline_step() -> None:
         named_steps = {"model": Step()}
 
     assert S.model_feature_count(Pipeline()) == 5
+
+
+def test_reduced_formula_merges_equivalent_representations() -> None:
+    assert S.reduced_formula("Fe") == S.reduced_formula("Fe2") == "Fe"
+    assert S.reduced_formula("Sc2Ni2Ga4") == "Ga2NiSc"

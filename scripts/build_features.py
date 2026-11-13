@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ammonia_ai.schema import SCHEMA_VERSION, SCREENING_FEATURES, assert_features_allowed
+from ammonia_ai.schema import SCHEMA_VERSION, SCREENING_FEATURES, assert_features_allowed, reduced_formula
 
 
 def file_md5(path: Path) -> str:
@@ -42,6 +42,8 @@ def main() -> int:
     assert_features_allowed([], args.registry)
     raw = pd.read_csv(args.raw)
     frame = pd.read_parquet(args.official_join) if args.official_join.suffix == ".parquet" else pd.read_csv(args.official_join)
+    if "bulk_reduced_formula" not in frame.columns:
+        frame["bulk_reduced_formula"] = frame["bulk_symbols"].map(reduced_formula)
     if len(frame) != len(raw):
         raise ValueError(f"joined row count {len(frame)} differs from raw row count {len(raw)}")
     required = {"system_id", "adsorbate", "bulk_id", "ads_id", "mapping_adsorbate", "reference_energy", "official_adsorption_energy_eV"}

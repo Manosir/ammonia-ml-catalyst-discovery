@@ -18,6 +18,8 @@ CATEGORIES = {
     "context": set(S.INPUT_CONTEXT_COLUMNS),
     "provenance": set(S.PROVENANCE_COLUMNS),
     "unverified": set(S.OC20_UNVERIFIED),
+    "oc20_metadata": set(S.OC20_METADATA_COLUMNS),
+    "derived_audit": set(S.DERIVED_AUDIT_COLUMNS),
 }
 
 
@@ -52,7 +54,7 @@ def test_old_18_feature_set_is_rejected() -> None:
 
 def test_inf_rejected_even_when_missing_allowed() -> None:
     with pytest.raises(ValueError):
-        S.validate_feature_frame(pd.DataFrame({"gcn_initial": [0.1, float("inf")]}), features=("gcn_initial",), allow_missing=True)
+        S.validate_feature_frame(pd.DataFrame({"gcn_initial": [0.1, float("inf")]}), features=("gcn_initial",), registry_path=None, allow_missing=True)
 
 
 def test_registry_matches_schema() -> None:
@@ -66,7 +68,7 @@ def test_real_table_columns_are_classified_when_present() -> None:
     path = Path("results/adsorbates/oc20_adsorbates_features.parquet")
     if not path.exists():
         pytest.skip("model table not built")
-    known = set().union(*CATEGORIES.values()) | {"qc_suspect", "anomaly_label", "is_clean_primary_regression_row"}
+    known = set().union(*CATEGORIES.values())
     columns = {column for column in pd.read_parquet(path).columns if not column.startswith("qc_")}
     assert not (columns - known), sorted(columns - known)
 
