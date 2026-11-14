@@ -229,7 +229,10 @@ def summarize(df, table):
         "final h_k3 share<0": g.h_k3_final.apply(lambda x: (x < 0).mean()),
         "median n_frames": g.n_frames.median(),
     }).round(3).to_string())
-    t = pd.read_parquet(table, columns=["system_id", "anomaly", "adsorption_energy_eV", "ads_height_final_audit"])
+    t = pd.read_parquet(table)
+    ren = {"official_adsorption_energy_eV": "adsorption_energy_eV", "ads_height": "ads_height_final_audit"}
+    t = t.rename(columns={k: v for k, v in ren.items() if k in t.columns and v not in t.columns})
+    t = t[["system_id", "anomaly", "adsorption_energy_eV", "ads_height_final_audit"]]
     m = ok.merge(t, on="system_id")
     print(f"\nold final-frame ads_height < 0: {(m.ads_height_final_audit < 0).mean():.3f} | "
           f"MIC-based final h_k3 < 0: {(m.h_k3_final < 0).mean():.3f}")
