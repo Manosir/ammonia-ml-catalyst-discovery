@@ -1,58 +1,84 @@
 #!/usr/bin/env python3
-"""Single source of truth for screening-feature availability."""
+"""Generate the feature registry FROM the schema (single source of truth)."""
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ammonia_ai import schema as S  # noqa: E402
+
 COLS = ["name", "role", "source", "available_at_screening", "extra_step_needed", "implemented", "leakage_risk", "note"]
-F = [
-("gcn_initial","feature","initial slab coordinates + adsorption-site neighbors","yes","site enumeration","no","low","define cutoff and validate on initial frame"),
-("ads_height_initial","feature","initial frame, MIC displacement vector z-component","yes","site enumeration","no","low","report variance by adsorbate"),
-("site_ensemble","feature","initial site neighbors","yes","site enumeration","no","low","mono-metallic / bimetallic / minority single atom"),
- ("miller_hkl_max","feature","OC20 mapping miller_index (numeric encoding)","yes","none","no","low","max |h|,|k|,|l|"),
- ("miller_norm2","feature","OC20 mapping miller_index (numeric encoding)","yes","none","no","low","h^2+k^2+l^2"),
-("bulk_structure_type","feature","bulk structure + spglib","yes","spglib analysis","no","low","fcc / bcc / hcp / other"),
-("material_class","feature","bulk composition","yes","none","no","low","unary / binary / ternary"),
-("nonmetal_flag","feature","bulk composition","yes","none","no","low","S, Se, As, etc."),
-("metallic_radius_site_mean","feature","tabulated property + site-neighbor aggregation","yes","site enumeration","no","low","aggregation is explicit in name"),
-("electronegativity_site_mean","feature","tabulated property + site-neighbor aggregation","yes","site enumeration","no","low","handle nonmetal-containing rows explicitly"),
-("d_electrons_site_mean","feature","tabulated property + site-neighbor aggregation","yes","site enumeration","no","low","handle nonmetal-containing rows explicitly"),
-("primary_metal_frac","feature","initial composition","yes","define primary element","no","low","most abundant or mapping-defined; document choice"),
-("tm_frac","feature","initial composition","yes","none","no","low",""),
-("n_distinct_TM","feature","initial composition","yes","none","no","low",""),
-("facet_roughness","feature","initial slab coordinates","yes","define metric","no","medium",""),
-("d_band_proxy_tabulated","experimental","tabulated composition-averaged proxy","yes","calibrate and compare baselines","no","low","not a true site-projected d-band"),
-("shift","identity_key","OC20 mapping","yes","none","yes","medium","do not use as raw numeric feature without grouped splits"),
-("n_adsorbate_N","redundant","adsorbate label","yes","none","yes","low","constant within per-adsorbate model"),
-("n_adsorbate_H","redundant","adsorbate label","yes","none","yes","low","constant within per-adsorbate model"),
-("adsorbate_atom_count","redundant","adsorbate label","yes","none","yes","low","constant within per-adsorbate model"),
-("n_surface_atoms","review","initial structure","yes","verify tag semantics","yes","low","rename if it means full slab minus adsorbate"),
-("d_band_center_slab_dft","excluded","clean-slab DFT","no","DFT per candidate","no","high","not screening-available"),
-("d_band_center_site_dft","excluded","site-projected DOS, usually relaxed","no","DFT per candidate","no","high","not screening-available"),
-("ads_height_final","excluded","relaxed frame","no","relaxation","yes","high","audit only"),
-("mean_ads_force","excluded","relaxed frame forces","no","relaxation","yes","high","bounded by convergence criterion"),
-("energy_initial_eV","excluded","initial-frame DFT","no","DFT per candidate","yes","high","target-side audit"),
-("forces_initial","excluded","initial-frame DFT forces","no","DFT per candidate","no","high","not available for a new candidate"),
-("energy_final_eV","excluded","relaxed DFT","no","relaxation","yes","high","audit only"),
-("relaxation_energy_change_eV","excluded","target-derived","no","relaxation","yes","high","not a screening feature"),
-("reference_energy","excluded","OC20 reference / target construction","no","DFT reference","yes","high","target construction only"),
-("anomaly","label_filter","OC20 mapping relaxation outcome","no","relaxation","yes","high","policy-controlled QC label"),
-("official_adsorption_energy_eV","target","energy_final - reference_energy","no","relaxation","yes","n/a","primary supervised target"),
-("system_id","identifier","OC20","no","none","yes","n/a","never a feature"),
-("bulk_id","group_key","OC20 mapping","no","none","yes","n/a","grouped split key"),
-("ads_id","identifier","OC20 mapping","no","none","yes","n/a","never a feature"),
-]
+LEGACY_EXCLUDED = ("ads_height_final", "mean_ads_force", "d_band_center_site", "d_band_center_slab_dft", "forces_initial")
+
+
+def _source(name: str) -> str:
+    if name in S.ADSORBATE_FEATURES:
+        return "adsorbate identity (numbers of N and H atoms), chosen by the user"
+    if name in S.MILLER_FEATURES:
+        return "slab Miller index (numeric encoding)"
+    if name in S.PROPERTY_FEATURES or name in S.COMPOSITION_FEATURES:
+        scope = name.split("_", 1)[0]
+        return {
+            "bulk": "bulk composition x tabulated element properties",
+            "surf": "surface-layer composition of the initial slab (tag 1) x tabulated element properties",
+            "site": "slab atoms within d_min + 0.5 A of the adsorbate (initial frame) x tabulated element properties",
+        }[scope]
+    if name in S.GEOMETRY_FEATURES:
+        return "initial-frame adsorbate-slab distances and heights (minimum image)"
+    if name in S.TOPOLOGY_FEATURES:
+        return "initial-frame nearest slab atoms around the adsorbate"
+    if name in S.COORDINATION_FEATURES:
+        return "initial-frame slab coordination numbers (real cell, 1.2 x covalent radii)"
+    return ""
+
+
+def registry_frame() -> pd.DataFrame:
+    rows: dict[str, dict] = {}
+
+    def add(name, role, source="", avail="no", extra="none", impl="yes", leak="n/a", note=""):
+        if name in rows:
+            raise ValueError(f"duplicate registry name: {name}")
+        rows[name] = dict(
+            name=name, role=role, source=source, available_at_screening=avail, extra_step_needed=extra,
+            implemented=impl, leakage_risk=leak, note=note,
+        )
+
+    placement, site_dep = set(S.PLACEMENT_SENSITIVE_FEATURES), set(S.SITE_DEPENDENT_FEATURES)
+    for name in S.SCREENING_FEATURES:
+        add(name, "feature", _source(name), "yes", "site enumeration" if name in site_dep else "none", "yes", "low",
+            "placement-sensitive: depends on how the adsorbate was positioned" if name in placement else "")
+    for name in S.EXPERIMENTAL_FEATURES:
+        add(name, "experimental", "", "yes", "none", "no", "low", "")
+    for name in S.AUDIT_COLUMNS:
+        role = "target" if name == "official_adsorption_energy_eV" else ("label_filter" if name == "anomaly" else "excluded")
+        add(name, role, "relaxed or target-derived quantity", "no", "relaxation or DFT", "yes", "high", "audit only")
+    for name in S.STRUCTURE_PASS_AUDIT_COLUMNS:
+        add(name, "excluded", "last-frame or trajectory quantity from the structure pass", "no", "relaxation", "yes", "high", "audit only")
+    for name in LEGACY_EXCLUDED:
+        add(name, "excluded", "legacy Stage-1 feature (final-frame or DFT-dependent)", "no", "relaxation or DFT", "yes", "high", "not screening-available")
+    for name in S.TARGET_COLUMNS:
+        add(name, "target", "energy_final - reference_energy (OC20 official)", "no", "relaxation", "yes", "n/a", "primary supervised target")
+    for name in S.IDENTIFIER_COLUMNS:
+        add(name, "identifier", "OC20", "no", "none", "yes", "n/a", "never a feature")
+    for name in S.GROUP_KEYS:
+        add(name, "group_key", "bulk metadata", "no", "none", "yes", "n/a", "grouped split key, never a feature")
+    for name in S.INPUT_CONTEXT_COLUMNS:
+        add(name, "context", "adsorbate label", "no", "none", "yes", "n/a", "enters through ads_nN / ads_nH")
+    return pd.DataFrame(list(rows.values()), columns=COLS)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("results/adsorbates/feature_availability.csv"))
     args = parser.parse_args()
+    frame = registry_frame()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(F, columns=COLS).to_csv(args.output, index=False)
-    print(f"Wrote {len(F)} feature registry rows to {args.output}")
+    frame.to_csv(args.output, index=False)
+    print(f"Wrote {len(frame)} registry rows ({int((frame.role == 'feature').sum())} screening features) to {args.output}")
     return 0
 
 
