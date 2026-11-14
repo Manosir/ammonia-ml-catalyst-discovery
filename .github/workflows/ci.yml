@@ -49,7 +49,6 @@ jobs:
           python - <<'PY'
           from ammonia_ai import SCHEMA_VERSION, TARGET_COLUMN
           from ammonia_ai import schema as S
-          from ammonia_ai.features import calculate_site_gcn, site_local_d_band_from_atoms
 
           assert SCHEMA_VERSION.startswith("screening-v3-")
           assert len(S.SCREENING_FEATURES) == 64
