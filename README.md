@@ -8,7 +8,18 @@ The repository is designed as a foundation for a future autonomous scientific-ag
 
 > **Current scope:** This release is a descriptor-based `N*` adsorption-energy surrogate. It is not yet a complete microkinetic model, an experimentally validated catalyst predictor, or an autonomous DFT agent.
 
-## Current result
+## Status (2026-11-14): screening-v3 baseline
+
+The repository now also contains a leak-free multi-adsorbate baseline (N*, N2*, NH*, NH2*, NH3*; thermal Haber-Bosch; unrelaxed slab + adsorbate at a known site), trained and evaluated on all 45,558 OC20 IS2RE trajectories with 64 element-free initial-frame features. Protocol, confidence intervals and limitations: `reports/M1_report.md`.
+
+Headline (clean rows, chemical-system grouped CV, untuned): MAE 0.578 eV [0.564, 0.593] against a floor of 0.984 eV; 0.464 eV on intermetallic (class 0) surfaces. Leave-element-out over 54 elements: 0.636 eV against a floor of 1.041 eV.
+
+Not yet done: a catalyst ranking (needs a barrier or microkinetic layer), a saved final model, and a re-placement test of the placement-sensitive features. Run order: `scripts/run_all.sh`.
+
+## Stage 1 result (superseded for screening)
+
+> Superseded by the screening-v3 baseline above. The table below describes an N*-only model on a label-filtered 4,849-row subset with random splits and three final-frame features, which are unavailable for an unrelaxed candidate. A grouped re-evaluation gives MAE 0.786 eV with all 16 features, 0.814 eV without the three final-frame ones and 0.823 eV from composition alone. Details: `intermediates/n_adsorption/LEGACY.md`.
+
 
 The current reproducible model-ready dataset contains **4,849 OC20 `N*` systems** after descriptor, energy, adsorbate, metallic-slab, and metadata filtering.
 

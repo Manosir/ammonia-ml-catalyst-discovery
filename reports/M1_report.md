@@ -12,7 +12,7 @@ Thermal Haber-Bosch screening with an unrelaxed slab plus adsorbate at a known s
 - NH2 occurs only in the two OC20 "oos_ads" splits.
 
 ## 3. Features (64, element-free)
-Adsorbate descriptors (numbers of N and H atoms, 2); Miller encodings (2); tabulated element properties (electronegativity, group, period) aggregated as mean/min/max/range over the bulk, the surface layer and the site atoms (36); transition-metal and non-metal fractions and element counts over the same three scopes (9); initial-frame geometry (7), topology (3) and coordination (5). Nine features are placement-sensitive. Element one-hot fractions were excluded: in leave-element-out tests they fell to 23% below the floor, against 42% for the property features.
+Adsorbate descriptors (numbers of N and H atoms, 2); Miller encodings (2); tabulated element properties (electronegativity, group, period) aggregated as mean/min/max/range over the bulk, the surface layer and the site atoms (36); transition-metal and non-metal fractions and element counts over the same three scopes (9); initial-frame geometry (7), topology (3) and coordination (5). Nine features are placement-sensitive. Element one-hot fractions were excluded: in the 12-element leave-element-out ablation they reached only 23% below the floor, against 42% for the property features.
 
 ## 4. Protocol
 HistGradientBoosting, 200 iterations. Floor = (adsorbate, class) training mean. "Full" uses all 64 features, "light" the 55 that are not placement-sensitive. Evaluations: chemical-system grouped CV (3 repeats x 5 folds), the official OC20 split, true leave-element-out (54 elements; every bulk containing the element removed from training), NH2 held out of training.
