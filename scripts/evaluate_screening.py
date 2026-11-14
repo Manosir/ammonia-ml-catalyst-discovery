@@ -367,7 +367,7 @@ def main(argv=None):
     c.clean = c.anom == 0
     results = {"schema_version": S.SCHEMA_VERSION, "table": str(a.table), "rows": int(len(df)), "clean_rows": int(c.clean.sum()),
                "features_full": len(full), "features_light": len(light),
-               "settings": {k: v for k, v in vars(a).items() if k not in ("table", "out")}}
+               "settings": {k: v for k, v in vars(a).items() if k not in ("table", "out", "registry")}}
     print(f"{len(df):,} rows | {int(c.clean.sum()):,} clean | {len(set(c.groups)):,} chemical systems | full {len(full)} features, light {len(light)}", flush=True)
 
     modes = ["grouped", "official", "leave-element-out", "leave-adsorbate-out", "anomaly"] if a.mode == "all" else [a.mode]

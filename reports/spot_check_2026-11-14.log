@@ -1,0 +1,40 @@
+element data source: pymatgen
+element table vs pymatgen: 64 elements checked (lanthanides excluded: different convention), 0 differences
+  checked random2114964 (N)
+  checked random470155 (N)
+  checked random755223 (N)
+  checked random1662376 (N)
+  checked random1172412 (N)
+  checked random1713315 (N2)
+  checked random586000 (N2)
+  checked random1863081 (N2)
+  checked random766810 (N2)
+  checked random1689257 (N2)
+  checked random1937041 (NH)
+  checked random748689 (NH)
+  checked random1392948 (NH)
+  checked random1059599 (NH)
+  checked random1815542 (NH)
+  checked random2540197 (NH2)
+  checked random2567905 (NH2)
+  checked random1367622 (NH2)
+  checked random1151487 (NH2)
+  checked random438525 (NH2)
+  checked random1375127 (NH3)
+  checked random522364 (NH3)
+  checked random2165490 (NH3)
+  checked random1280031 (NH3)
+  checked random2287119 (NH3)
+  checked random1204565 (N2)
+  checked random1560098 (NH3)
+  checked random1183224 (N)
+
+28 systems (N 6, N2 6, NH3 6, NH 5, NH2 5), 60 columns each
+  bulk : 15 columns, worst absolute difference 0.00e+00
+  surf : 15 columns, worst absolute difference 1.78e-15
+  site : 15 columns, worst absolute difference 0.00e+00
+  geo  : 7 columns, worst absolute difference 4.93e-05
+  topo : 3 columns, worst absolute difference 6.81e-05
+  cn   : 5 columns, worst absolute difference 4.44e-05
+
+SPOT-CHECK PASSED: every column matches the independent recomputation

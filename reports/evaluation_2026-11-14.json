@@ -7,7 +7,6 @@
   "features_light": 55,
   "settings": {
     "mode": "all",
-    "registry": "/Users/mohamednosir/Desktop/Ammonia-Ai/manus-run-August_2026/ammonia-ml-catalyst-discovery-updated/ammonia-ml-catalyst-discovery-github/results/adsorbates/feature_availability.csv",
     "folds": 5,
     "repeats": 3,
     "bootstrap": 1000,

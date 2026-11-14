@@ -1,0 +1,260 @@
+45,558 rows | 40,208 clean | 4,288 chemical systems | full 64 features, light 55
+
+==== 1. CHEMICAL-SYSTEM GROUPED CV (train on clean rows; test on all rows of held-out chemical systems) ====
+  repeat 1/3, fold 1/5 (3s)
+  repeat 1/3, fold 2/5 (6s)
+  repeat 1/3, fold 3/5 (9s)
+  repeat 1/3, fold 4/5 (12s)
+  repeat 1/3, fold 5/5 (15s)
+  repeat 2/3, fold 1/5 (19s)
+  repeat 2/3, fold 2/5 (28s)
+  repeat 2/3, fold 3/5 (37s)
+  repeat 2/3, fold 4/5 (43s)
+  repeat 2/3, fold 5/5 (47s)
+  repeat 3/3, fold 1/5 (51s)
+  repeat 3/3, fold 2/5 (56s)
+  repeat 3/3, fold 3/5 (61s)
+  repeat 3/3, fold 4/5 (65s)
+  repeat 3/3, fold 5/5 (69s)
+
+Clean rows by adsorbate | 40,208 rows, 4,150 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL       40208   0.984      0.578 [0.564, 0.593]      0.586 [0.572, 0.601]      -0.406 [-0.427, -0.386]      +0.008 [+0.005, +0.010]
+  N         11561   1.386      0.694 [0.672, 0.718]      0.707 [0.685, 0.731]      -0.692 [-0.733, -0.654]      +0.013 [+0.008, +0.018]
+  N2         4595   0.798      0.630 [0.605, 0.654]      0.644 [0.620, 0.668]      -0.168 [-0.186, -0.148]      +0.014 [+0.008, +0.021]
+  NH        10101   1.109      0.589 [0.571, 0.608]      0.594 [0.576, 0.612]      -0.521 [-0.548, -0.492]      +0.005 [+0.001, +0.009]
+  NH2        8226   0.783      0.532 [0.513, 0.551]      0.538 [0.517, 0.559]      -0.252 [-0.269, -0.234]      +0.006 [+0.002, +0.010]
+  NH3        5725   0.388      0.351 [0.335, 0.366]      0.351 [0.334, 0.366]      -0.037 [-0.046, -0.029]      -0.001 [-0.004, +0.003]
+
+Clean class-0 rows by adsorbate | 20,239 rows, 1,552 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL       20239   0.927      0.464 [0.451, 0.479]      0.473 [0.458, 0.488]      -0.463 [-0.492, -0.432]      +0.009 [+0.006, +0.012]
+  N          5767   1.402      0.587 [0.561, 0.620]      0.601 [0.573, 0.636]      -0.815 [-0.870, -0.753]      +0.014 [+0.007, +0.022]
+  N2         2620   0.769      0.534 [0.510, 0.557]      0.560 [0.534, 0.584]      -0.235 [-0.257, -0.212]      +0.026 [+0.017, +0.034]
+  NH         4947   1.040      0.463 [0.445, 0.482]      0.468 [0.449, 0.487]      -0.577 [-0.616, -0.535]      +0.005 [+0.001, +0.010]
+  NH2        4002   0.664      0.396 [0.380, 0.412]      0.400 [0.383, 0.416]      -0.269 [-0.298, -0.240]      +0.004 [+0.000, +0.007]
+  NH3        2903   0.297      0.251 [0.239, 0.263]      0.247 [0.235, 0.260]      -0.046 [-0.058, -0.035]      -0.004 [-0.008, +0.000]
+
+Clean rows by OC20 class | 40,208 rows, 4,150 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL       40208   0.984      0.578 [0.565, 0.593]      0.586 [0.573, 0.601]      -0.406 [-0.425, -0.385]      +0.008 [+0.006, +0.010]
+  class 0   20239   0.927      0.464 [0.450, 0.479]      0.473 [0.459, 0.488]      -0.463 [-0.494, -0.432]      +0.009 [+0.006, +0.012]
+  class 1    9172   0.957      0.570 [0.551, 0.589]      0.576 [0.556, 0.596]      -0.387 [-0.423, -0.347]      +0.006 [+0.002, +0.010]
+  class 2   10211   1.111      0.787 [0.761, 0.813]      0.794 [0.768, 0.821]      -0.324 [-0.356, -0.295]      +0.007 [+0.002, +0.013]
+  class 3     586   1.140      1.017 [0.907, 1.129]      1.022 [0.910, 1.139]      -0.123 [-0.223, -0.043]      +0.005 [-0.031, +0.038]
+
+All rows by anomaly code (trained on clean rows only; point estimates, no resampling)
+  none             n= 40208  floor 0.984  full 0.578  light 0.586
+  dissociated      n=  1429  floor 1.289  full 1.068  light 1.093
+  desorbed         n=  2416  floor 0.598  full 0.464  light 0.446
+  surface changed  n=  1505  floor 1.383  full 1.182  light 1.189
+  N2  none             n= 4595  floor 0.798  full 0.630  light 0.644
+  N2  dissociated      n=   33  floor 3.828  full 3.370  light 3.468
+  N2  desorbed         n= 1428  floor 0.621  full 0.478  light 0.441
+  N2  surface changed  n=  155  floor 1.209  full 1.312  light 1.304
+  NH3 none             n= 5725  floor 0.388  full 0.351  light 0.351
+  NH3 dissociated      n=  926  floor 1.144  full 0.996  light 1.020
+  NH3 desorbed         n=  983  floor 0.561  full 0.442  light 0.450
+  NH3 surface changed  n=  310  floor 0.904  full 0.887  light 0.891
+
+Spearman between out-of-fold predictions (full contract) and the DFT labels, within adsorbate
+  clean rows: N 0.861 [0.852, 0.869]  N2 0.616 [0.593, 0.640]  NH 0.841 [0.831, 0.849]  NH2 0.734 [0.717, 0.749]  NH3 0.494 [0.465, 0.518]
+  clean class-0 rows: N 0.892 [0.878, 0.903]  N2 0.683 [0.653, 0.708]  NH 0.879 [0.865, 0.891]  NH2 0.777 [0.750, 0.802]  NH3 0.558 [0.511, 0.601]
+
+==== 2. OFFICIAL OC20 SPLIT ====
+train: 28,890 clean rows with split == 'train' (NH2 never appears here); val_is shares about 95% of its bulks with train, val_oos_bulk shares none
+
+val_is: clean rows by adsorbate | 1,515 rows, 911 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL        1515   1.062      0.610 [0.573, 0.654]      0.613 [0.576, 0.658]      -0.452 [-0.501, -0.403]      +0.003 [-0.010, +0.015]
+  N           552   1.408      0.720 [0.658, 0.790]      0.724 [0.663, 0.796]      -0.688 [-0.782, -0.595]      +0.003 [-0.022, +0.028]
+  N2          231   0.798      0.600 [0.524, 0.683]      0.615 [0.540, 0.695]      -0.198 [-0.270, -0.118]      +0.015 [-0.018, +0.048]
+  NH          457   1.176      0.631 [0.559, 0.718]      0.632 [0.559, 0.715]      -0.545 [-0.630, -0.460]      +0.001 [-0.020, +0.021]
+  NH3         275   0.402      0.365 [0.317, 0.430]      0.358 [0.307, 0.420]      -0.037 [-0.065, -0.010]      -0.007 [-0.023, +0.010]
+
+val_is: clean class-0 rows by adsorbate | 747 rows, 409 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL         747   0.989      0.492 [0.452, 0.536]      0.496 [0.457, 0.542]      -0.497 [-0.572, -0.424]      +0.004 [-0.013, +0.021]
+  N           270   1.383      0.618 [0.540, 0.706]      0.628 [0.548, 0.727]      -0.765 [-0.905, -0.630]      +0.011 [-0.021, +0.043]
+  N2          125   0.790      0.500 [0.418, 0.592]      0.536 [0.455, 0.628]      -0.291 [-0.385, -0.190]      +0.036 [-0.009, +0.078]
+  NH          219   1.036      0.469 [0.404, 0.538]      0.450 [0.393, 0.507]      -0.567 [-0.705, -0.435]      -0.019 [-0.052, +0.007]
+  NH3         133   0.300      0.268 [0.231, 0.310]      0.268 [0.228, 0.309]      -0.032 [-0.068, +0.006]      -0.001 [-0.017, +0.017]
+
+val_oos_bulk: clean rows by adsorbate | 1,577 rows, 339 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL        1577   1.033      0.582 [0.529, 0.650]      0.591 [0.534, 0.660]      -0.452 [-0.521, -0.384]      +0.009 [-0.005, +0.023]
+  N           578   1.370      0.712 [0.621, 0.822]      0.711 [0.608, 0.831]      -0.658 [-0.774, -0.534]      -0.001 [-0.029, +0.027]
+  N2          244   0.794      0.598 [0.523, 0.685]      0.630 [0.551, 0.716]      -0.196 [-0.291, -0.102]      +0.032 [-0.009, +0.068]
+  NH          475   1.140      0.571 [0.507, 0.640]      0.583 [0.512, 0.660]      -0.569 [-0.662, -0.477]      +0.012 [-0.009, +0.035]
+  NH3         280   0.365      0.317 [0.278, 0.361]      0.323 [0.283, 0.366]      -0.048 [-0.070, -0.025]      +0.007 [-0.012, +0.025]
+
+val_oos_bulk: clean class-0 rows by adsorbate | 859 rows, 139 chemical systems (95% CI: 1000 bootstrap resamples of whole chemical systems)
+             rows   floor             full MAE [CI]            light MAE [CI]              full-floor [CI]              light-full [CI]
+  ALL         859   1.019      0.486 [0.436, 0.543]      0.494 [0.443, 0.552]      -0.534 [-0.639, -0.437]      +0.008 [-0.009, +0.029]
+  N           316   1.354      0.584 [0.504, 0.676]      0.561 [0.478, 0.650]      -0.770 [-0.948, -0.604]      -0.023 [-0.051, +0.008]
+  N2          154   0.777      0.529 [0.454, 0.614]      0.598 [0.514, 0.693]      -0.247 [-0.342, -0.154]      +0.069 [+0.025, +0.112]
+  NH          256   1.131      0.466 [0.398, 0.546]      0.477 [0.405, 0.562]      -0.665 [-0.793, -0.537]      +0.011 [-0.011, +0.039]
+  NH3         133   0.291      0.241 [0.207, 0.277]      0.247 [0.212, 0.285]      -0.049 [-0.081, -0.019]      +0.006 [-0.011, +0.023]
+
+==== 3. TRUE LEAVE-ELEMENT-OUT (every bulk containing the element is removed from training) ====
+54 elements: Al, Ti, S, Si, Zr, Ga, Hf, Pd, Ni, Se, Ca, Ge, P, Y, Sn, As, Rh, In, Pt, Sc, Te, Zn, Nb, Sr, V, Cu, Co, Fe, Sb, Ru, Ta, Mo, N, Au, Ir, Mn, Cr, Na, Ag, Pb, K, Cd, Bi, W, Hg, Tc, Os, Tl, Cl, H, Rb, Cs, Re, C
+  Al: 3613 test rows (4s)
+  Ti: 3408 test rows (8s)
+  S: 3287 test rows (12s)
+  Si: 2870 test rows (15s)
+  Zr: 2836 test rows (19s)
+  Ga: 2698 test rows (23s)
+  Hf: 2603 test rows (27s)
+  Pd: 2583 test rows (30s)
+  Ni: 2531 test rows (34s)
+  Se: 2524 test rows (38s)
+  Ca: 2469 test rows (41s)
+  Ge: 2396 test rows (44s)
+  P: 2294 test rows (48s)
+  Y: 2202 test rows (51s)
+  Sn: 2075 test rows (55s)
+  As: 2065 test rows (58s)
+  Rh: 2027 test rows (61s)
+  In: 1962 test rows (65s)
+  Pt: 1961 test rows (69s)
+  Sc: 1952 test rows (73s)
+  Te: 1915 test rows (76s)
+  Zn: 1822 test rows (79s)
+  Nb: 1799 test rows (83s)
+  Sr: 1766 test rows (86s)
+  V: 1764 test rows (89s)
+  Cu: 1758 test rows (93s)
+  Co: 1749 test rows (96s)
+  Fe: 1683 test rows (99s)
+  Sb: 1666 test rows (103s)
+  Ru: 1642 test rows (106s)
+  Ta: 1634 test rows (109s)
+  Mo: 1594 test rows (113s)
+  N: 1516 test rows (116s)
+  Au: 1432 test rows (120s)
+  Ir: 1409 test rows (123s)
+  Mn: 1343 test rows (126s)
+  Cr: 1299 test rows (130s)
+  Na: 1284 test rows (134s)
+  Ag: 1188 test rows (137s)
+  Pb: 1136 test rows (141s)
+  K: 1100 test rows (144s)
+  Cd: 1075 test rows (147s)
+  Bi: 936 test rows (151s)
+  W: 864 test rows (154s)
+  Hg: 786 test rows (158s)
+  Tc: 765 test rows (162s)
+  Os: 750 test rows (165s)
+  Tl: 701 test rows (168s)
+  Cl: 677 test rows (173s)
+  H: 644 test rows (176s)
+  Rb: 606 test rows (181s)
+  Cs: 577 test rows (186s)
+  Re: 547 test rows (190s)
+  C: 385 test rows (194s)
+
+per element (MAE in eV; _c0 = class 0 only; rho_N_full = Spearman within N* rows, full contract):
+element  rows  rows_class0  floor  floor_c0  full  full_c0  light  light_c0  rho_N_full
+     Al  3613         2982  0.814     0.763 0.568    0.522  0.560     0.517       0.733
+     Ti  3408         1996  1.059     0.954 0.622    0.503  0.637     0.516       0.747
+      S  3287            0  1.203       NaN 0.849      NaN  0.858       NaN       0.528
+     Si  2870            0  0.945       NaN 0.563      NaN  0.567       NaN       0.710
+     Zr  2836         1801  1.078     1.011 0.583    0.514  0.600     0.523       0.745
+     Ga  2698         2171  0.838     0.778 0.513    0.464  0.520     0.476       0.861
+     Hf  2603         1628  1.168     1.067 0.634    0.563  0.649     0.579       0.746
+     Pd  2583         1905  1.008     1.064 0.493    0.480  0.500     0.492       0.797
+     Ni  2531         1530  0.706     0.661 0.502    0.442  0.506     0.449       0.783
+     Se  2524            0  1.249       NaN 0.786      NaN  0.791       NaN       0.585
+     Ca  2469         1423  0.761     0.702 0.588    0.506  0.609     0.531       0.721
+     Ge  2396            0  0.825       NaN 0.547      NaN  0.551       NaN       0.838
+      P  2294            0  0.911       NaN 0.680      NaN  0.690       NaN       0.608
+      Y  2202         1537  0.873     0.832 0.551    0.493  0.564     0.512       0.733
+     Sn  2075         1497  1.024     0.999 0.546    0.543  0.562     0.551       0.836
+     As  2065            0  0.926       NaN 0.653      NaN  0.655       NaN       0.695
+     Rh  2027         1235  0.700     0.712 0.462    0.413  0.470     0.424       0.805
+     In  1962         1434  0.993     0.916 0.510    0.434  0.520     0.444       0.852
+     Pt  1961         1359  0.857     0.867 0.501    0.482  0.502     0.481       0.789
+     Sc  1952         1271  1.006     0.980 0.594    0.554  0.602     0.570       0.727
+     Te  1915            0  1.516       NaN 0.708      NaN  0.713       NaN       0.643
+     Zn  1822         1293  0.928     0.819 0.565    0.438  0.574     0.440       0.846
+     Nb  1799          806  0.871     0.718 0.559    0.399  0.563     0.406       0.797
+     Sr  1766          897  0.756     0.709 0.839    0.880  0.877     0.935       0.394
+      V  1764          937  0.986     0.867 0.591    0.451  0.612     0.472       0.713
+     Cu  1758         1046  0.931     0.910 0.519    0.462  0.523     0.472       0.877
+     Co  1749          891  0.783     0.727 0.518    0.433  0.524     0.443       0.747
+     Fe  1683          689  0.815     0.790 0.566    0.454  0.579     0.457       0.759
+     Sb  1666            0  1.043       NaN 0.604      NaN  0.611       NaN       0.768
+     Ru  1642         1007  0.649     0.623 0.451    0.383  0.463     0.406       0.773
+     Ta  1634          813  1.049     0.894 0.638    0.477  0.644     0.482       0.739
+     Mo  1594          672  0.947     0.746 0.646    0.419  0.686     0.443       0.774
+      N  1516            0  1.181       NaN 0.956      NaN  1.012       NaN       0.386
+     Au  1432         1255  1.268     1.290 0.542    0.543  0.557     0.557       0.832
+     Ir  1409          955  0.690     0.670 0.491    0.474  0.492     0.471       0.822
+     Mn  1343          591  0.938     0.886 0.725    0.634  0.726     0.635       0.678
+     Cr  1299          494  0.896     0.819 0.612    0.431  0.619     0.456       0.795
+     Na  1284          642  1.059     1.211 1.163    1.401  1.131     1.351       0.405
+     Ag  1188          820  1.249     1.262 0.587    0.508  0.576     0.503       0.750
+     Pb  1136          733  1.276     1.226 0.551    0.495  0.553     0.490       0.754
+      K  1100          352  1.171     1.448 0.571    0.338  0.564     0.329       0.604
+     Cd  1075          773  1.146     1.133 0.529    0.438  0.535     0.452       0.837
+     Bi   936          640  1.309     1.387 0.521    0.525  0.521     0.519       0.607
+      W   864          344  0.989     0.765 0.732    0.522  0.744     0.500       0.720
+     Hg   786          685  1.499     1.518 0.640    0.626  0.696     0.685       0.834
+     Tc   765          608  0.693     0.642 0.467    0.404  0.474     0.415       0.788
+     Os   750          507  0.683     0.608 0.497    0.417  0.498     0.428       0.708
+     Tl   701          435  1.242     1.316 0.682    0.595  0.676     0.554       0.647
+     Cl   677            0  2.639       NaN 1.507      NaN  1.576       NaN       0.353
+      H   644            0  1.533       NaN 1.004      NaN  1.001       NaN       0.496
+     Rb   606          226  1.280     1.500 0.601    0.408  0.613     0.415       0.760
+     Cs   577          183  1.098     1.290 0.621    0.383  0.581     0.345       0.583
+     Re   547          426  0.808     0.703 0.492    0.424  0.501     0.421       0.713
+      C   385            0  1.369       NaN 0.879      NaN  0.914       NaN       0.283
+
+mean over 54 elements (95% CI: bootstrap over ELEMENTS; the test sets overlap, so rows are not resampled)
+  all rows  floor 1.041 | full 0.636 [0.591, 0.688] | light 0.645 [0.601, 0.705] | full-floor -0.406 [-0.462, -0.348] | light-full +0.010 [+0.005, +0.015]
+  class 0   floor 0.947 | full 0.507 [0.465, 0.567] | light 0.513 [0.470, 0.567] | full-floor -0.441 [-0.527, -0.355] | light-full +0.006 [+0.000, +0.013]
+  row-weighted full MAE 0.618 vs floor 0.996
+
+==== 4. LEAVE-ADSORBATE-OUT: NH2 unseen (train: clean, split == 'train', no NH2; adsorbate described by nN and nH) ====
+constant baseline = mean of the NH and NH3 training means = -0.896 eV
+
+  val_oos_ads | all classes | 3806 rows, 1567 chemical systems
+    MAE full 0.783 [0.756, 0.812] | light 0.785 [0.757, 0.814] | constant 0.835
+    full - constant -0.052 [-0.089, -0.016] | light - full +0.003 [-0.006, +0.009]
+    Spearman full 0.734 [0.712, 0.754] | light 0.728 [0.706, 0.749] | slope of truth on prediction (full) 0.659 [0.630, 0.686]
+
+  val_oos_ads | class 0 | 1934 rows, 667 chemical systems
+    MAE full 0.642 [0.608, 0.674] | light 0.644 [0.609, 0.677] | constant 0.712
+    full - constant -0.070 [-0.117, -0.014] | light - full +0.002 [-0.006, +0.011]
+    Spearman full 0.765 [0.735, 0.790] | light 0.763 [0.732, 0.787] | slope of truth on prediction (full) 0.614 [0.581, 0.645]
+
+  val_oos_ads_bulk | all classes | 4420 rows, 471 chemical systems
+    MAE full 0.736 [0.700, 0.772] | light 0.745 [0.706, 0.783] | constant 0.804
+    full - constant -0.068 [-0.111, -0.025] | light - full +0.008 [+0.000, +0.017]
+    Spearman full 0.696 [0.667, 0.722] | light 0.689 [0.659, 0.716] | slope of truth on prediction (full) 0.665 [0.634, 0.694]
+
+  val_oos_ads_bulk | class 0 | 2068 rows, 186 chemical systems
+    MAE full 0.609 [0.557, 0.660] | light 0.621 [0.566, 0.677] | constant 0.688
+    full - constant -0.079 [-0.150, -0.009] | light - full +0.012 [+0.000, +0.025]
+    Spearman full 0.755 [0.703, 0.792] | light 0.754 [0.704, 0.791] | slope of truth on prediction (full) 0.609 [0.575, 0.646]
+
+==== 5. ANOMALY CLASSIFIER (all rows, chemical-system folds; metrics WITHIN each adsorbate, never pooled) ====
+
+  desorbed
+    N2  positives  1428 of  6211 (base rate 0.230) | AUC 0.907 [0.899, 0.915] | AP 0.732 | precision at 80% recall 0.595
+    NH3 positives   983 of  7944 (base rate 0.124) | AUC 0.860 [0.848, 0.873] | AP 0.477 | precision at 80% recall 0.321
+
+  dissociated
+    N2  positives    33 of  6211 (base rate 0.005) | AUC 0.736 [0.635, 0.829] | AP 0.018 | precision at 80% recall 0.010  (few positives)
+    NH  positives    47 of 10438 (base rate 0.005) | AUC 0.920 [0.890, 0.949] | AP 0.156 | precision at 80% recall 0.021  (few positives)
+    NH2 positives   423 of  8842 (base rate 0.048) | AUC 0.915 [0.904, 0.925] | AP 0.396 | precision at 80% recall 0.224
+    NH3 positives   926 of  7944 (base rate 0.117) | AUC 0.905 [0.897, 0.916] | AP 0.554 | precision at 80% recall 0.403
+
+  surface changed
+    N   positives   562 of 12123 (base rate 0.046) | AUC 0.840 [0.822, 0.854] | AP 0.184 | precision at 80% recall 0.132
+    N2  positives   155 of  6211 (base rate 0.025) | AUC 0.881 [0.859, 0.901] | AP 0.165 | precision at 80% recall 0.098
+    NH  positives   290 of 10438 (base rate 0.028) | AUC 0.872 [0.854, 0.889] | AP 0.166 | precision at 80% recall 0.100
+    NH2 positives   188 of  8842 (base rate 0.021) | AUC 0.888 [0.865, 0.906] | AP 0.149 | precision at 80% recall 0.088
+    NH3 positives   310 of  7944 (base rate 0.039) | AUC 0.877 [0.859, 0.893] | AP 0.252 | precision at 80% recall 0.140
+
+wrote results/evaluation_screening.json | done in 315s
