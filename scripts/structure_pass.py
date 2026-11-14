@@ -9,6 +9,7 @@ for _name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VEC
     os.environ.setdefault(_name, "1")
 
 import argparse
+import io
 import json
 import lzma
 import signal
@@ -56,8 +57,10 @@ def analyse(path):
     from ase.neighborlist import neighbor_list
 
     with lzma.open(path, "rt") as handle:
-        frames = read(handle, index=":", format="extxyz")
-    first, last = frames[0], frames[-1]
+        text = handle.read()
+    n_frames = text.count("Lattice=")
+    first = read(io.StringIO(text), index=0, format="extxyz")
+    last = read(io.StringIO(text), index=-1, format="extxyz")
     if len(first) != len(last):
         raise ValueError("first and last frame differ in atom count")
     cell = np.array(first.cell)
@@ -141,7 +144,7 @@ def analyse(path):
         "near_symbols": sym[slab][order].tolist(), "near_tags": tags[slab][order].tolist(),
         "near_cn": cn[order].astype(int).tolist(), "near_dist": _fl(dist), "near_dz": _fl(dz),
         "slab_comp": comp(slab), "surface_comp": comp(surf),
-        "n_frames": len(frames),
+        "n_frames": n_frames,
         "slab_disp_max": _f(dn.max()), "slab_disp_rms": _f(np.sqrt((dn ** 2).mean())),
         "slab_n_disp_gt_0p5": int((dn > 0.5).sum()),
         "surf_disp_max": _f(np.nanmax(dn1)), "surf_n_disp_gt_0p5": int((dn1 > 0.5).sum()),
