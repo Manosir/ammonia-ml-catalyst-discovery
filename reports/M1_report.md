@@ -53,3 +53,79 @@ The earlier N*-only model (README: MAE 0.771 eV, R2 0.583) used final-frame feat
 
 ## 9. Open items
 run_all script and saved final model; moving legacy code; README note; a real re-placement test of the placement sensitivity; volcano ranking and retrodiction (M2).
+
+## 10. Uncertainty (A5, full protocol: 5 folds, 200 iterations, 4 bootstrap models)
+
+### 10.1 Protocol
+- Chemical-system grouped 5-fold CV (GroupKFold on bulk_chemsys)
+- 4 bootstrap models, each resampled by whole chemical systems (all rows of a system together)
+- Per-adsorbate normalized conformal calibration: leave-one-fold-out; on each training fold, normalized residuals = raw_residual / (bootstrap_prediction_std / median_std); test quantiles computed per adsorbate at alpha=0.10 on out-of-group normalized residuals
+- kNN applicability domain (95th percentile distance via inner 5-fold CV): flags for unseen element, far from training, magnetic metal in surface layer, non-metal rich surface
+- Reliability tiers: high (no AD flags), medium (only magnetic flag), low (any other flag)
+
+### 10.2 Prediction Interval Coverage
+| Adsorbate | Coverage |
+|---|---|
+| N | 0.883 |
+| N2 | 0.872 |
+| NH | 0.883 |
+| NH2 | 0.888 |
+| NH3 | 0.898 |
+
+| Tier | Coverage |
+|---|---|
+| high | 0.885 |
+| medium | 0.872 |
+| low | 0.914 |
+
+| Adsorbate | high | medium | low |
+|---|---|---|---|
+| N | 0.885 | 0.860 | 0.905 |
+| N2 | 0.865 | 0.885 | 0.920 |
+| NH | 0.884 | 0.864 | 0.912 |
+| NH2 | 0.888 | 0.875 | 0.920 |
+| NH3 | 0.898 | 0.886 | 0.925 |
+
+### 10.3 MAE by Tier
+| Tier | MAE (eV) |
+|---|---|
+| high | 0.565 |
+| medium | 0.502 |
+| low | 0.851 |
+
+### 10.4 Sharpness (Spearman Width vs |Error|)
+| Adsorbate | rho | p-value |
+|---|---|---|
+| N | 0.184 | 6.8e-89 |
+| N2 | 0.120 | 2.9e-16 |
+| NH | 0.185 | 7.5e-79 |
+| NH2 | 0.204 | 6.5e-78 |
+| NH3 | 0.181 | 2.7e-43 |
+| Overall | 0.228 | <1e-300 |
+
+### 10.5 AD Flag Rates
+| Flag | Rate |
+|---|---|
+| unseen element | 0.02% |
+| far from training | 3.8% |
+| magnetic | 14.3% |
+| non-metal rich | 3.9% |
+
+### 10.6 Limitations (uncertainty-specific)
+(a) Conformal calibration residuals for training rows come from fold models that saw the test fold.  
+(b) The ensemble standard deviation used to normalize calibration residuals is in-sample while test values are out-of-sample.  
+(c) Interval widths only weakly track error (Spearman 0.23 overall).  
+(d) Nominal coverage is 0.90 (alpha = 0.10, no finite-sample correction). Observed coverage is 0.872 to 0.898, below nominal for every adsorbate; N2 (0.872) also misses the 0.88 acceptance threshold used in validate_uncertainty.py.
+
+## 11. Pure-metal leave-one-metal-out, N*
+
+![Pure-metal leave-one-metal-out N*](../docs/figures/pure_metal_lomo_N.png)
+
+Per-row predictions from `results/m3/pure_metal_oof.csv`; script `scripts/generate_h4_figure.py`. For each pure metal: the most-stable-site label (minimum over clean N rows with labels in [-4, +5] eV) against the minimum predicted energy over the same metal's rows.
+
+- 26 d-block metals (groups 3-11): Spearman 0.956, MAE 0.595 eV. All 48 elements: Spearman 0.917, MAE 0.746 eV.
+- Groups 6-10 (15 metals): Spearman <FILL IN>, MAE <FILL IN> eV.
+- Strong binders are compressed: Fe -1.62 vs -0.87, Co -1.48 vs -0.50, Mo -1.47 vs -1.09 eV (label vs prediction). Rh has a sign error (-0.46 vs +0.16 eV).
+- Caveats: several metals have only 2-3 rows (Os, Mo, Pt, Ir), so the minimum is noisy; label and prediction minima often come from different facets; the all-metal ranking is dominated by the early-to-late trend. This is a ranking tool, not an E_N predictor at the 0.1-0.15 eV accuracy a barrier estimate would need.
+
+Data note: 688 of 11,561 clean N rows (6%) have labels above +3 eV, concentrated in Hg, Ag-Au and sulfide/selenide/telluride/chloride compounds; 193 of them (28%) have N more than 1.5 A above the surface.

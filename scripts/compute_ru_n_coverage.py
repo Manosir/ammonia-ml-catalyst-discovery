@@ -2,13 +2,27 @@
 """Task G1: Correct Ru coverage using actual tag 1 (surface layer) atoms from trajectory frames.
 
 For the 16 pure-Ru N rows, read the trajectory ASE database/file if available,
-or compute surface atoms accurately. Since trajectory files (.traj or ASE DB)
-may be in raw paths or computed via structure, let's inspect where trajectories are stored.
+or compute surface atoms accurately. Uses tag=1 atoms from the first frame of
+each trajectory to compute surface coverage.
 """
 
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import lzma
+import ase.io
+
+
+def get_tag1_count(source_path: str):
+    """Read first frame of trajectory and return tag=1 atom count."""
+    try:
+        with lzma.open(source_path, 'rt') as f:
+            atoms = ase.io.read(f, format='extxyz', index=0)
+            tags = atoms.get_tags()
+            return sum(1 for t in tags if t == 1)
+    except Exception as e:
+        return None, str(e)
+
 
 def main():
     path = "results/adsorbates/oc20_adsorbates_features.parquet"
@@ -20,31 +34,33 @@ def main():
     ru_n = df[(df["bulk_chemsys"] == "Ru") & (df["adsorbate"] == "N")].copy()
     ru_n = ru_n.sort_values("adsorption_energy_eV")
 
-    # Let's check what columns are available regarding trajectories or positions
     print(f"Total pure Ru N rows: {len(ru_n)}")
-
-    # If trajectory files or ase atoms are not directly in parquet, let's check how surface atoms can be derived
-    # In OC20 parquet, n_surface_atoms is stored. Let's check if there are any other columns.
-    print("Available columns:", [c for c in df.columns if any(k in c.lower() for k in ['surf', 'atom', 'tag', 'coord', 'traj'])])
-
-    # Let's compute coverage using n_surface_atoms / 4 (since 4-layer hcp(0001) slabs have surface atoms = total / 4)
-    # Or if n_surface_atoms already represents surface atoms when properly defined:
-    # Let's inspect the exact values and print the required table to results/m3/ru_n_coverage.csv
 
     results = []
     for _, r in ru_n.iterrows():
         system_id = r.get("system_id", "N/A")
         facet = str(r.get("miller_index", "N/A")).replace("[", "").replace("]", "").replace("\n", " ")
         total_slab_atoms = int(r.get("n_surface_atoms", 36))
-        # Surface layer atoms for a 4-layer slab: total_slab_atoms / 4
-        # Or if n_surface_atoms is already surface atoms, let's check.
-        # Earlier we saw n_surface_atoms in [36, 48, 54, 64, 72, 96], which are total slab atom counts for OC20 slabs.
-        # Surface layer atoms = total_slab_atoms / 4
-        surface_atoms = total_slab_atoms / 4.0
         n_ads = int(r.get("n_adsorbate_N", 1))
-        coverage = n_ads / surface_atoms
         label = str(r.get("anomaly_label", "none"))
         e_ads = float(r.get("adsorption_energy_eV", 0.0))
+        source_path = r.get("source_path", "")
+
+        # Get surface atoms from tag-1 in first trajectory frame
+        tag1_result = get_tag1_count(source_path)
+        if isinstance(tag1_result, tuple):
+            tag1_count = None
+            status = f"FAILED: {tag1_result[1]}"
+        else:
+            tag1_count = tag1_result
+            status = "OK"
+
+        if tag1_count is not None and tag1_count > 0:
+            surface_atoms = tag1_count
+            coverage = n_ads / surface_atoms
+        else:
+            surface_atoms = np.nan
+            coverage = np.nan
 
         results.append({
             "system_id": system_id,
@@ -53,7 +69,8 @@ def main():
             "surface_atoms": surface_atoms,
             "coverage_ML": coverage,
             "anomaly_label": label,
-            "E_ads_eV": e_ads
+            "E_ads_eV": e_ads,
+            "status": status
         })
 
     res_df = pd.DataFrame(results)
@@ -64,15 +81,25 @@ def main():
     res_df.to_csv(out_path, index=False)
     print(f"\nSaved Ru N coverage table to {out_path}")
 
-    print("\n" + "=" * 110)
-    print("TASK G1: Ru N COVERAGE TABLE")
-    print("=" * 110)
+    print("\n" + "=" * 120)
+    print("TASK G1: Ru N COVERAGE TABLE (surface atoms = tag-1 from first trajectory frame)")
+    print("=" * 120)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 200)
     print(res_df.to_string(index=False))
-    print("=" * 110)
+    print("=" * 120)
 
     # Check how many rows are >= 0.2 ML
     ge_02 = res_df[res_df["coverage_ML"] >= 0.2]
     print(f"\nNumber of rows with coverage >= 0.2 ML: {len(ge_02)}")
+
+    # Summary
+    failed = res_df[res_df["status"] != "OK"]
+    if len(failed) > 0:
+        print(f"\nWARNING: {len(failed)} rows failed to read trajectory:")
+        for _, f in failed.iterrows():
+            print(f"  {f['system_id']}: {f['status']}")
+
 
 if __name__ == "__main__":
     main()
