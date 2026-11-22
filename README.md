@@ -18,6 +18,16 @@ Headline (clean rows, chemical-system grouped CV, untuned): MAE 0.578 eV [0.564,
 
 Not yet done: a catalyst ranking (needs a barrier or microkinetic layer), a saved final model, and a re-placement test of the placement-sensitive features. Run order: `scripts/run_all.sh`.
 
+### Screening-v3 figures
+
+![Pure-metal leave-one-metal-out, N*](docs/figures/pure_metal_lomo_N.png)
+
+Leave-one-metal-out N* on 26 d-block pure metals: Spearman 0.956, MAE 0.595 eV (most-stable-site label vs minimum prediction). Strong binders are compressed (Fe, Co, Mo) and Rh has a sign error. Details: `reports/M1_report.md`, section 11.
+
+![Interval coverage by reliability tier](docs/figures/coverage_tiers.png)
+
+Split-conformal interval coverage by reliability tier (nominal 0.90). Protocol and limitations: `reports/M1_report.md`, section 10.
+
 ## Stage 1 result (superseded for screening)
 
 > Superseded by the screening-v3 baseline above. The table below describes an N*-only model on a label-filtered 4,849-row subset with random splits and three final-frame features, which are unavailable for an unrelaxed candidate. A grouped re-evaluation gives MAE 0.786 eV with all 16 features, 0.814 eV without the three final-frame ones and 0.823 eV from composition alone. Details: `intermediates/n_adsorption/LEGACY.md`.
@@ -36,7 +46,7 @@ The current model-ready dataset contains **4,849 OC20 `N*` systems** after descr
 
 These metrics are preliminary. Random validation should later be supplemented by leave-one-metal-out, leave-one-facet-out, composition-family holdout, and genuinely external validation before making claims about transferability.
 
-## Results overview
+## Results overview (Stage 1, legacy N*-only model)
 
 ### Feature importance
 
