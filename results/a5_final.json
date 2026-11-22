@@ -79,5 +79,10 @@
   "elapsed_time_seconds": 454.1612768173218,
   "n_bootstrap": 4,
   "n_splits": 3,
-  "max_iter": 100
+  "max_iter": 100,
+  "protocol": {
+    "n_splits": 5,
+    "n_bootstrap": 6,
+    "max_iter": 200
+  }
 }
