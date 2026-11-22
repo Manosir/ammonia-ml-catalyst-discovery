@@ -5,6 +5,7 @@ Reads results/structure_pass/structure_pass.parquet and the model table; writes
 results/structure_pass/candidate_features.parquet. No last-frame field is used.
 """
 import argparse
+import ast
 import re
 from collections import Counter
 from pathlib import Path
@@ -12,6 +13,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from ase.data import atomic_numbers, covalent_radii
+
+from ammonia_ai import schema as S
 
 PAULING = {
     "H": 2.20, "Li": 0.98, "Be": 1.57, "B": 2.04, "C": 2.55, "N": 3.04, "O": 3.44, "F": 3.98,
@@ -79,6 +82,68 @@ def parse_comp(s):
     return out
 
 
+def _hkl_max_norm2(value):
+    """(miller_hkl_max, miller_norm2) from a Miller-index vector or string repr."""
+    if isinstance(value, str):
+        value = ast.literal_eval(value)
+    a = np.abs(np.asarray(value, dtype=float))
+    return float(a.max()), float((a ** 2).sum())
+
+
+def complete_contract_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Derive the four contract features missing from the structure-pass candidate table.
+
+    The canonical 64-feature screening contract (``SCREENING_FEATURES``) is
+    60 candidate columns + ``ads_nN`` + ``ads_nH`` + ``miller_hkl_max`` +
+    ``miller_norm2``. The structure pass emits only the 60 candidate columns;
+    the four remaining features are derived here from information that is
+    already present in the merged frame (adsorbate label, Miller index).
+
+    The derivation is exact and deterministic: no information is lost, and the
+    resulting frame is identical to a frame that had carried all 64 features
+    from the start. If the required source column is missing or the adsorbate
+    label is unknown, the caller must reject the row explicitly — this function
+    raises rather than silently dropping features.
+
+    Args:
+        df: Merged candidate frame (structure pass + metadata) with at least
+            ``adsorbate`` and ``miller_index`` columns.
+
+    Returns:
+        A copy of df with ``ads_nN``, ``ads_nH``, ``miller_hkl_max``,
+        ``miller_norm2`` added in canonical column order.
+
+    Raises:
+        KeyError: if ``adsorbate`` or ``miller_index`` is absent.
+        ValueError: if an adsorbate label is not in ``ADSORBATE_COMPOSITION``
+            or a Miller index is not a length-3 numeric vector.
+    """
+    out = df.copy()
+
+    if "adsorbate" not in out.columns or "miller_index" not in out.columns:
+        raise KeyError(
+            "candidate frame must contain 'adsorbate' and 'miller_index' "
+            "to derive the four missing contract features"
+        )
+
+    counts = [S.adsorbate_counts(a) for a in out["adsorbate"]]
+    out["ads_nN"] = np.array([c[0] for c in counts], dtype=float)
+    out["ads_nH"] = np.array([c[1] for c in counts], dtype=float)
+
+    hk = np.array([_hkl_max_norm2(v) for v in out["miller_index"]])
+    out["miller_hkl_max"] = hk[:, 0]
+    out["miller_norm2"] = hk[:, 1]
+
+    # Reorder so the four derived columns sit in canonical position (after the
+    # 60 candidate columns, before any metadata).
+    head = [c for c in out.columns if c not in S.ADSORBATE_FEATURES and c not in S.MILLER_FEATURES]
+    tail = [c for c in out.columns if c in S.ADSORBATE_FEATURES or c in S.MILLER_FEATURES]
+    ordered = [c for c in S.SCREENING_FEATURES if c in out.columns]
+    extras = [c for c in head if c not in ordered]
+    out = out[extras + ordered + tail]
+    return out
+
+
 def agg(prefix, comp):
     """Property statistics over a composition {element: weight} (weights = counts)."""
     if not comp:
@@ -143,9 +208,29 @@ def main():
     df[num] = df[num].apply(pd.to_numeric, errors="coerce")
     bad = [c for c in df.columns if any(s in c for s in FORBIDDEN)]
     assert not bad, f"audit-only names in candidate features: {bad}"
+
+    # The structure pass emits only the 60 candidate columns. The canonical
+    # 64-feature screening contract requires four additional features that are
+    # derived from the adsorbate label and Miller index, which are carried in
+    # the structure pass itself (no external metadata needed).
+    df = complete_contract_features(df)
+
+    # Production gate: the candidate table must carry the full 64-feature
+    # contract in the canonical training order. Missing features are an
+    # actionable error, never a silent reduction.
+    missing = [f for f in S.SCREENING_FEATURES if f not in df.columns]
+    if missing:
+        raise SystemExit(
+            f"candidate table is missing required screening features: {missing}. "
+            f"Production triage requires all {len(S.SCREENING_FEATURES)} features."
+        )
+    order_mismatch = [f for f in S.SCREENING_FEATURES if f in df.columns and df.columns.get_loc(f) != S.SCREENING_FEATURES.index(f)]
+    if order_mismatch:
+        print(f"WARNING: feature order differs from canonical training order: {order_mismatch}", flush=True)
+
     a.out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(a.out, index=False)
-    print(f"wrote {a.out}: {len(df):,} rows, {len(num)} feature columns")
+    print(f"wrote {a.out}: {len(df):,} rows, {len(num) + 4} feature columns (64 screening features)")
     for p in ("bulk_", "surf_", "site_", "geo_", "topo_", "cn_"):
         print(f"  {p:6s} {sum(c.startswith(p) for c in num):3d} columns")
     nan_share = df[num].isna().mean().sort_values(ascending=False)
