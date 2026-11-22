@@ -443,6 +443,25 @@ intermediates/n_adsorption/scripts/diagnostics/evaluate_gcn_frame_leakage.py
 
 It should be interpreted as a diagnostic comparison, not as the canonical 16-feature production workflow. Leakage-sensitive evaluation should explicitly separate descriptors derived from initial and relaxed frames and report the split strategy used.
 
+## Reproducibility and data policy
+
+This repository does not redistribute the OC20 dataset. Users should obtain data through the appropriate OC20 distribution or download mechanism, comply with the dataset’s terms, and record the exact source and checksum used for each run.
+
+For a reproducible experiment, record the following information:
+
+| Item | Example |
+|---|---|
+| Python version | `3.11.x` |
+| Package version or Git commit | `git rev-parse HEAD` |
+| Dataset source and checksum | OC20 source plus recorded hash |
+| Trajectory directory | `data/is2re_N/77/77` |
+| Descriptor commands | Exact commands and worker count |
+| Metadata source | Mapping-file path and checksum |
+| Model manifest | `results/n_adsorption/model_manifest.json` |
+| Random seeds | Training and screening seeds where applicable |
+
+Generated datasets, descriptors, models, and caches should remain outside version control unless a separate release explicitly documents why they are being distributed.
+
 ## Autonomous-agent vision
 
 The long-term goal is an auditable closed-loop scientific agent:
