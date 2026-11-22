@@ -124,7 +124,7 @@ run_all script and saved final model; moving legacy code; README note; a real re
 Per-row predictions from `results/m3/pure_metal_oof.csv`; script `scripts/generate_h4_figure.py`. For each pure metal: the most-stable-site label (minimum over clean N rows with labels in [-4, +5] eV) against the minimum predicted energy over the same metal's rows.
 
 - 26 d-block metals (groups 3-11): Spearman 0.956, MAE 0.595 eV. All 48 elements: Spearman 0.917, MAE 0.746 eV.
-- Groups 6-10 (15 metals): Spearman <FILL IN>, MAE <FILL IN> eV.
+- Groups 6-10 (15 metals): Spearman 0.907, MAE 0.589 eV.
 - Strong binders are compressed: Fe -1.62 vs -0.87, Co -1.48 vs -0.50, Mo -1.47 vs -1.09 eV (label vs prediction). Rh has a sign error (-0.46 vs +0.16 eV).
 - Caveats: several metals have only 2-3 rows (Os, Mo, Pt, Ir), so the minimum is noisy; label and prediction minima often come from different facets; the all-metal ranking is dominated by the early-to-late trend. This is a ranking tool, not an E_N predictor at the 0.1-0.15 eV accuracy a barrier estimate would need.
 
