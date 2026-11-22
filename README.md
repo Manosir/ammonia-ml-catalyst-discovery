@@ -1,6 +1,6 @@
 # Ammonia-AI: Auditable ML-Assisted Catalyst Discovery
 
-[![CI](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml/badge.svg)](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml)
+**CI note:** GitHub Actions is currently unavailable for this account (billing lock). Tests verified locally in a fresh environment (Python 3.13): `pytest` 128 passed, 1 skipped. The CI matrix (Python 3.11 to 3.13) will be restored once Actions is available.
 
 Ammonia-AI is a reproducible materials-informatics workflow for exploring transition-metal surfaces for ammonia synthesis. The current release focuses on predicting nitrogen-atom (`N*`) adsorption-energy differences from Open Catalyst 2020 (OC20) IS2RE trajectories using electronic, geometric, compositional, and surface descriptors.
 
