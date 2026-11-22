@@ -14,7 +14,7 @@ The repository now also contains a leak-free multi-adsorbate baseline (N*, N2*, 
 
 **Headline (clean rows, chemical-system grouped CV, untuned):** MAE 0.578 eV [0.564, 0.593] (5-fold, 200 iterations) against a floor of 0.984 eV; 0.464 eV on intermetallic (class 0) surfaces. Leave-element-out over 54 elements: 0.636 eV against a floor of 1.041 eV.
 
-**Uncertainty baseline:** MAE 0.577 eV (high reliability), 0.511 eV (medium), 0.850 eV (low). Protocol: 3-fold, 100 iterations, fast mode. Full-protocol run in progress.
+**Uncertainty baseline:** MAE 0.565 eV (high reliability), 0.502 eV (medium), 0.851 eV (low). Protocol: 5-fold, 200 iterations, full protocol (fast-mode draft: 3-fold, 100 iterations).
 
 **Limitations:**
 1. Average global coverage hides per-adsorbate variation before per-adsorbate quantile calibration.
