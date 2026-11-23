@@ -1,5 +1,59 @@
 """Shared contracts and utilities for the Ammonia-AI repository."""
 
-from .schema import FEATURE_COLUMNS, METADATA_COLUMNS, TARGET_COLUMN
+from .adsorbates import (
+    ADSORBATE_METADATA,
+    ADSORBATE_METADATA_COLUMNS,
+    OC20_ARCHIVES,
+)
+from .schema import METADATA_COLUMNS, SCHEMA_VERSION, TARGET_COLUMN
+from .uncertainty import (
+    build_ad_model,
+    save_ad_model,
+    load_ad_model,
+    compute_applicability_domain_v2,
+    compute_prediction_intervals_conformal,
+    compute_acquisition_score_v2,
+    compute_triage_predictions_v2,
+    compute_reliability_tier,
+    derive_in_domain_elements,
+    train_bootstrap_models,
+    validate_uncertainty_on_heldout,
+    MAGNETIC_ELEMENTS,
+    CONFORMAL_ALPHA,
+    KNN_K,
+    KNN_THRESHOLD_PERCENTILE,
+    AD_UNSEEN_ELEMENT,
+    AD_FAR_FROM_TRAINING,
+    AD_MAGNETIC,
+    AD_NONMETAL_RICH,
+    RELIABILITY_TIER,
+)
 
-__all__ = ["FEATURE_COLUMNS", "METADATA_COLUMNS", "TARGET_COLUMN"]
+__all__ = [
+    "METADATA_COLUMNS",
+    "SCHEMA_VERSION",
+    "TARGET_COLUMN",
+    "ADSORBATE_METADATA",
+    "ADSORBATE_METADATA_COLUMNS",
+    "OC20_ARCHIVES",
+    "build_ad_model",
+    "save_ad_model",
+    "load_ad_model",
+    "compute_applicability_domain_v2",
+    "compute_prediction_intervals_conformal",
+    "compute_acquisition_score_v2",
+    "compute_triage_predictions_v2",
+    "compute_reliability_tier",
+    "derive_in_domain_elements",
+    "train_bootstrap_models",
+    "validate_uncertainty_on_heldout",
+    "MAGNETIC_ELEMENTS",
+    "CONFORMAL_ALPHA",
+    "KNN_K",
+    "KNN_THRESHOLD_PERCENTILE",
+    "AD_UNSEEN_ELEMENT",
+    "AD_FAR_FROM_TRAINING",
+    "AD_MAGNETIC",
+    "AD_NONMETAL_RICH",
+    "RELIABILITY_TIER",
+]

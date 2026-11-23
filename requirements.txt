@@ -1,6 +1,7 @@
 # Core scientific stack
 numpy>=1.24
 pandas>=1.5
+pyarrow>=14
 scipy>=1.10
 
 # Atomistic simulation
@@ -9,6 +10,9 @@ ase>=3.22
 # Machine learning
 scikit-learn>=1.2
 joblib>=1.2
+
+# Configuration
+pyyaml>=6.0
 
 # Visualisation
 matplotlib>=3.6

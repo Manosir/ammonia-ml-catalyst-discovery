@@ -39,7 +39,7 @@ jobs:
 
       - name: Compile Python source
         run: |
-          python -m compileall -q src tests intermediates
+          python -m compileall -q src tests intermediates scripts
 
       - name: Run pytest
         run: python -m pytest -q
@@ -47,10 +47,11 @@ jobs:
       - name: Verify canonical imports
         run: |
           python - <<'PY'
-          from ammonia_ai import FEATURE_COLUMNS, TARGET_COLUMN
-          from ammonia_ai.features import calculate_site_gcn, site_local_d_band_from_atoms
+          from ammonia_ai import SCHEMA_VERSION, TARGET_COLUMN
+          from ammonia_ai import schema as S
 
-          assert len(FEATURE_COLUMNS) == 16
-          assert TARGET_COLUMN == "delta_E_ads"
+          assert SCHEMA_VERSION.startswith("screening-v3-")
+          assert len(S.SCREENING_FEATURES) == 64
+          assert TARGET_COLUMN == "adsorption_energy_eV"
           print("Canonical imports: OK")
           PY

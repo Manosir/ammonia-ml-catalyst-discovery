@@ -1,0 +1,32 @@
+  repeat 1/2, fold 1/5 (4s)
+  repeat 1/2, fold 2/5 (7s)
+  repeat 1/2, fold 3/5 (11s)
+  repeat 1/2, fold 4/5 (15s)
+  repeat 1/2, fold 5/5 (19s)
+  repeat 2/2, fold 1/5 (23s)
+  repeat 2/2, fold 2/5 (27s)
+  repeat 2/2, fold 3/5 (30s)
+  repeat 2/2, fold 4/5 (33s)
+  repeat 2/2, fold 5/5 (37s)
+
+clean rows: MAE (eV); each row is tested 2x with chemical-system folds
+           floor   full  light  full->median  full+N(0,0.1)  full+N(0,0.25)  full+N(0,0.5)
+adsorbate                                                                                 
+N          1.387  0.691  0.705         0.737          0.695           0.704          0.732
+N2         0.798  0.631  0.642         0.683          0.632           0.640          0.663
+NH         1.108  0.585  0.595         0.618          0.588           0.594          0.616
+NH2        0.783  0.531  0.540         0.558          0.533           0.540          0.562
+NH3        0.388  0.348  0.353         0.359          0.350           0.363          0.396
+ALL        0.984  0.576  0.586         0.610          0.579           0.587          0.612
+
+clean class-0 rows: MAE (eV); each row is tested 2x with chemical-system folds
+           floor   full  light  full->median  full+N(0,0.1)  full+N(0,0.25)  full+N(0,0.5)
+adsorbate                                                                                 
+N          1.401  0.582  0.600         0.623          0.586           0.594          0.621
+N2         0.769  0.537  0.556         0.613          0.538           0.549          0.567
+NH         1.038  0.458  0.469         0.481          0.460           0.465          0.489
+NH2        0.664  0.396  0.400         0.411          0.397           0.402          0.420
+NH3        0.297  0.249  0.247         0.257          0.250           0.255          0.286
+ALL        0.926  0.461  0.472         0.493          0.464           0.470          0.494
+
+done in 37s

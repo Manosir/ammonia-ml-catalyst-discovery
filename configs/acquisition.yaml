@@ -1,0 +1,32 @@
+# Acquisition function configuration for screening-v3
+# Used by uncertainty.py for ranking candidates for DFT calculation
+
+# Weight for epistemic variance component (rank-normalized within batch)
+# Higher = prioritize candidates where bootstrap ensemble disagrees
+variance_weight: 0.7
+
+# Weight for diversity component (rank-normalized within batch)
+# Higher = prioritize candidates far from training distribution in feature space
+diversity_weight: 0.3
+
+# Number of bootstrap models (resampled by whole chemical systems)
+n_bootstrap: 8
+
+# Random seed for bootstrap resampling
+random_state: 42
+
+# Conformal prediction confidence level (1 - alpha)
+# alpha = 0.10 gives 90% prediction intervals
+conformal_alpha: 0.10
+
+# kNN settings for distance-based AD flag
+knn_k: 5
+knn_threshold_percentile: 0.95  # threshold from CV held-out systems
+
+# Nonmetal-rich surface threshold percentile
+nonmetal_percentile: 0.95
+
+# Reliability tier definitions:
+# - high: no AD flags triggered
+# - medium: only ad_magnetic triggered (informational)
+# - low: any other AD flag triggered

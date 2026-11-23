@@ -1,6 +1,6 @@
 # Ammonia-AI: Auditable ML-Assisted Catalyst Discovery
 
-[![CI](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml/badge.svg)](https://github.com/Manosir/ammonia-ml-catalyst-discovery/actions/workflows/ci.yml)
+**CI note:** GitHub Actions is currently unavailable for this account (billing lock). Tests verified locally in a fresh environment (Python 3.13): `pytest` 128 passed, 1 skipped. The CI matrix (Python 3.11 to 3.13) will be restored once Actions is available.
 
 Ammonia-AI is a reproducible materials-informatics workflow for exploring transition-metal surfaces for ammonia synthesis. The current release focuses on predicting nitrogen-atom (`N*`) adsorption-energy differences from Open Catalyst 2020 (OC20) IS2RE trajectories using electronic, geometric, compositional, and surface descriptors.
 
@@ -8,7 +8,30 @@ The repository is designed as a foundation for a future autonomous scientific-ag
 
 > **Current scope:** This release is a descriptor-based `N*` adsorption-energy surrogate. It is not yet a complete microkinetic model, an experimentally validated catalyst predictor, or an autonomous DFT agent.
 
-## Current result
+## Status (2026-11-21): screening-v3 baseline
+
+The repository now also contains a leak-free multi-adsorbate baseline (N*, N2*, NH*, NH2*, NH3*; thermal Haber-Bosch; unrelaxed slab + adsorbate at a known site), trained and evaluated on all 45,558 OC20 IS2RE trajectories with 64 element-free initial-frame features. Protocol, confidence intervals and limitations: `reports/M1_report.md`.
+
+Headline (clean rows, chemical-system grouped CV, untuned): MAE 0.578 eV [0.564, 0.593] against a floor of 0.984 eV; 0.464 eV on intermetallic (class 0) surfaces. Leave-element-out over 54 elements: 0.636 eV against a floor of 1.041 eV.
+
+**Limitations:** (a) conformal calibration residuals for training rows come from fold models that saw the test fold; (b) the ensemble standard deviation used to normalize calibration residuals is in-sample while test values are out-of-sample; (c) OC20 N coverage is about 0.1 ML or lower against ¼ ML in the literature, and Ru(0001) shows −0.88 vs −0.29 eV, unresolved; (d) Fe/Co/Ni not spin-validated; (e) OC20 label outliers (39 of 1,991 pure-metal rows beyond −4/+5 eV); (f) N2 coverage 0.872; interval widths only weakly track error (Spearman 0.23).
+
+Not yet done: a catalyst ranking (needs a barrier or microkinetic layer), a saved final model, and a re-placement test of the placement-sensitive features. Run order: `scripts/run_all.sh`.
+
+### Screening-v3 figures
+
+![Pure-metal leave-one-metal-out, N*](docs/figures/pure_metal_lomo_N.png)
+
+Leave-one-metal-out N* on 26 d-block pure metals: Spearman 0.956, MAE 0.595 eV (most-stable-site label vs minimum prediction). Strong binders are compressed (Fe, Co, Mo) and Rh has a sign error. Details: `reports/M1_report.md`, section 11.
+
+![Interval coverage by reliability tier](docs/figures/coverage_tiers.png)
+
+Split-conformal interval coverage by reliability tier (nominal 0.90). Protocol and limitations: `reports/M1_report.md`, section 10.
+
+## Stage 1 result (superseded for screening)
+
+> Superseded by the screening-v3 baseline above. The table below describes an N*-only model on a label-filtered 4,849-row subset with random splits and three final-frame features, which are unavailable for an unrelaxed candidate. A grouped re-evaluation gives MAE 0.786 eV with all 16 features, 0.814 eV without the three final-frame ones and 0.823 eV from composition alone. Details: `intermediates/n_adsorption/LEGACY.md`.
+
 
 The current model-ready dataset contains **4,849 OC20 `N*` systems** after descriptor, energy, adsorbate, metallic-slab, and metadata filtering.
 
@@ -23,7 +46,7 @@ The current model-ready dataset contains **4,849 OC20 `N*` systems** after descr
 
 These metrics are preliminary. Random validation should later be supplemented by leave-one-metal-out, leave-one-facet-out, composition-family holdout, and genuinely external validation before making claims about transferability.
 
-## Results overview
+## Results overview (Stage 1, legacy N*-only model)
 
 ### Feature importance
 
@@ -419,6 +442,25 @@ intermediates/n_adsorption/scripts/diagnostics/evaluate_gcn_frame_leakage.py
 ```
 
 It should be interpreted as a diagnostic comparison, not as the canonical 16-feature production workflow. Leakage-sensitive evaluation should explicitly separate descriptors derived from initial and relaxed frames and report the split strategy used.
+
+## Reproducibility and data policy
+
+This repository does not redistribute the OC20 dataset. Users should obtain data through the appropriate OC20 distribution or download mechanism, comply with the dataset’s terms, and record the exact source and checksum used for each run.
+
+For a reproducible experiment, record the following information:
+
+| Item | Example |
+|---|---|
+| Python version | `3.11.x` |
+| Package version or Git commit | `git rev-parse HEAD` |
+| Dataset source and checksum | OC20 source plus recorded hash |
+| Trajectory directory | `data/is2re_N/77/77` |
+| Descriptor commands | Exact commands and worker count |
+| Metadata source | Mapping-file path and checksum |
+| Model manifest | `results/n_adsorption/model_manifest.json` |
+| Random seeds | Training and screening seeds where applicable |
+
+Generated datasets, descriptors, models, and caches should remain outside version control unless a separate release explicitly documents why they are being distributed.
 
 ## Autonomous-agent vision
 
